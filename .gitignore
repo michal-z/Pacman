@@ -1,0 +1,8 @@
+.vs
+Intermediate
+Saved
+Binaries
+DerivedDataCache
+*.exe
+*.pdb
+*.sln
