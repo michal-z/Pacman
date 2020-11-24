@@ -102,7 +102,7 @@ void APacmanPawn::Tick(float DeltaTime)
 
 void APacmanPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	APawn::SetupPlayerInputComponent(PlayerInputComponent);
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAction(TEXT("MoveUp"), IE_Pressed, this, &APacmanPawn::MoveUp);
 	PlayerInputComponent->BindAction(TEXT("MoveDown"), IE_Pressed, this, &APacmanPawn::MoveDown);
