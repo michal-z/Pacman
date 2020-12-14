@@ -1,11 +1,17 @@
 #include "PacmanPawn.h"
 #include "Components/SphereComponent.h"
+#include "Components/TextBlock.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
 #include "GameFramework/FloatingPawnMovement.h"
+#include "Blueprint/UserWidget.h"
 #include "PacmanGameModeBase.h"
+#include "PacmanHUDWidget.h"
+#include "PacmanFood.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
+
+#define LOCTEXT_NAMESPACE "Pacman"
 
 APacmanPawn::APacmanPawn()
 {
@@ -61,6 +67,17 @@ void APacmanPawn::MoveLeft()
 void APacmanPawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+	check(HUDWidgetClass);
+	HUDWidget = Cast<UPacmanHUDWidget>(CreateWidget(GetWorld(), HUDWidgetClass));
+	HUDWidget->AddToViewport();
+
+	check(MainCamera);
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	if (PlayerController)
+	{
+		PlayerController->SetViewTarget((AActor*)MainCamera);
+	}
 }
 
 void APacmanPawn::Tick(float DeltaTime)
@@ -119,3 +136,18 @@ UPawnMovementComponent* APacmanPawn::GetMovementComponent() const
 {
 	return MovementComponent;
 }
+
+void APacmanPawn::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	Super::NotifyActorBeginOverlap(OtherActor);
+
+	APacmanFood* Food = Cast<APacmanFood>(OtherActor);
+	if (Food)
+	{
+		Score += Food->Score;
+		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
+		Food->Destroy();
+	}
+}
+
+#undef LOCTEXT_NAMESPACE

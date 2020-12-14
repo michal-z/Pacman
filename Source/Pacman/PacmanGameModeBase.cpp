@@ -4,13 +4,6 @@
 
 PRAGMA_DISABLE_OPTIMIZATION
 
-APacmanGameModeBase::APacmanGameModeBase()
-{
-	MainMenuWidget = nullptr;
-	PauseMenuWidget = nullptr;
-	HUDWidget = nullptr;
-}
-
 void APacmanGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
@@ -34,11 +27,6 @@ void APacmanGameModeBase::BeginPlay()
 	}
 	else
 	{
-		check(HUDWidgetClass);
-
-		HUDWidget = CreateWidget(GetWorld(), HUDWidgetClass);
-		HUDWidget->AddToViewport();
-
 		PlayerController->SetInputMode(FInputModeGameOnly());
 		PlayerController->bShowMouseCursor = false;
 	}
