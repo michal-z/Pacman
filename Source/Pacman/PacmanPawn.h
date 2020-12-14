@@ -17,7 +17,6 @@ class PACMAN_API APacmanPawn : public APawn
 	UPROPERTY(EditAnywhere)
 	ACameraActor* MainCamera = nullptr;
 
-	UPROPERTY(EditAnywhere)
 	TSubclassOf<UUserWidget> HUDWidgetClass;
 
 	UPROPERTY()

@@ -6,10 +6,7 @@
 UCLASS()
 class PACMAN_API APacmanGameModeBase : public AGameModeBase
 {
-	UPROPERTY(EditAnywhere)
 	TSubclassOf<UUserWidget> MainMenuWidgetClass;
-
-	UPROPERTY(EditAnywhere)
 	TSubclassOf<UUserWidget> PauseMenuWidgetClass;
 
 	UPROPERTY()
@@ -21,6 +18,8 @@ class PACMAN_API APacmanGameModeBase : public AGameModeBase
 	virtual void BeginPlay() override;
 
 public:
+	APacmanGameModeBase();
+
 	void PauseGame();
 	void ResumeGame();
 	void BeginNewGame();

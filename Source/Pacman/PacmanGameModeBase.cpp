@@ -4,6 +4,20 @@
 
 PRAGMA_DISABLE_OPTIMIZATION
 
+APacmanGameModeBase::APacmanGameModeBase()
+{
+	{
+		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/Blueprints/UI/BP_MainMenu"));
+		check(Finder.Class);
+		MainMenuWidgetClass = Finder.Class;
+	}
+	{
+		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/Blueprints/UI/BP_PauseMenu"));
+		check(Finder.Class);
+		PauseMenuWidgetClass = Finder.Class;
+	}
+}
+
 void APacmanGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();

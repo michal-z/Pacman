@@ -42,6 +42,12 @@ APacmanPawn::APacmanPawn()
 	InputVector = FVector(-1.0f, 0.0f, 0.0f);
 	NonBlockingInputVector = FVector::ZeroVector;
 	WantedInputVector = FVector::ZeroVector;
+
+	{
+		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/Blueprints/UI/BP_HUD"));
+		check(Finder.Class);
+		HUDWidgetClass = Finder.Class;
+	}
 }
 
 void APacmanPawn::MoveUp()
