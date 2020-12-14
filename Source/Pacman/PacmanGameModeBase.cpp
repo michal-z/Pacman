@@ -1,11 +1,14 @@
 #include "PacmanGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
+#include "PacmanPawn.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
 
 APacmanGameModeBase::APacmanGameModeBase()
 {
+	DefaultPawnClass = APacmanPawn::StaticClass();
+
 	{
 		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/Blueprints/UI/BP_MainMenu"));
 		check(Finder.Class);
@@ -60,6 +63,7 @@ void APacmanGameModeBase::PauseGame()
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	PlayerController->SetInputMode(FInputModeUIOnly());
 	PlayerController->bShowMouseCursor = true;
+	PlayerController->SetPause(true);
 }
 
 void APacmanGameModeBase::ResumeGame()
@@ -72,6 +76,7 @@ void APacmanGameModeBase::ResumeGame()
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	PlayerController->SetInputMode(FInputModeGameOnly());
 	PlayerController->bShowMouseCursor = false;
+	PlayerController->SetPause(false);
 }
 
 void APacmanGameModeBase::BeginNewGame()

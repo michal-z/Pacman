@@ -4,7 +4,6 @@
 #include "PacmanPawn.generated.h"
 
 class UPawnMovementComponent;
-class ACameraActor;
 class UPacmanHUDWidget;
 
 UCLASS()
@@ -13,9 +12,6 @@ class PACMAN_API APacmanPawn : public APawn
 	FVector InputVector;
 	FVector WantedInputVector;
 	FVector NonBlockingInputVector;
-
-	UPROPERTY(EditAnywhere)
-	ACameraActor* MainCamera = nullptr;
 
 	TSubclassOf<UUserWidget> HUDWidgetClass;
 

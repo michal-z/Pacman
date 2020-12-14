@@ -1,6 +1,7 @@
 #include "PacmanPawn.h"
 #include "Components/SphereComponent.h"
 #include "Components/TextBlock.h"
+#include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
 #include "GameFramework/FloatingPawnMovement.h"
@@ -70,19 +71,41 @@ void APacmanPawn::MoveLeft()
 	WantedInputVector = FVector(-1.0f, 0.0f, 0.0f);
 }
 
+static AActor* FindActorByName(const FString& Name, UWorld* World)
+{
+	for (ULevel* Level : World->GetLevels())
+	{
+		if (Level && Level->IsCurrentLevel())
+		{
+			for (AActor* Actor : Level->Actors)
+			{
+				if (Actor && Actor->GetName() == TEXT("MainCamera"))
+				{
+					return Actor;
+				}
+			}
+		}
+	}
+	return nullptr;
+}
+
 void APacmanPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	check(HUDWidgetClass);
-	HUDWidget = Cast<UPacmanHUDWidget>(CreateWidget(GetWorld(), HUDWidgetClass));
-	HUDWidget->AddToViewport();
-
-	check(MainCamera);
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-	if (PlayerController)
+	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != TEXT("Main"))
 	{
-		PlayerController->SetViewTarget((AActor*)MainCamera);
+		check(HUDWidgetClass);
+		HUDWidget = Cast<UPacmanHUDWidget>(CreateWidget(GetWorld(), HUDWidgetClass));
+		HUDWidget->AddToViewport();
+
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+		check(PlayerController);
+
+		AActor* Camera = FindActorByName(TEXT("MainCamera"), GetWorld());
+		check(Camera);
+
+		PlayerController->SetViewTarget(Camera);
 	}
 }
 
