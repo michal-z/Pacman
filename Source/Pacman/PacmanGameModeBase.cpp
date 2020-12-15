@@ -10,12 +10,12 @@ APacmanGameModeBase::APacmanGameModeBase()
 	DefaultPawnClass = APacmanPawn::StaticClass();
 
 	{
-		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/Blueprints/UI/BP_MainMenu"));
+		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_MainMenu"));
 		check(Finder.Class);
 		MainMenuWidgetClass = Finder.Class;
 	}
 	{
-		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/Blueprints/UI/BP_PauseMenu"));
+		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_PauseMenu"));
 		check(Finder.Class);
 		PauseMenuWidgetClass = Finder.Class;
 	}
