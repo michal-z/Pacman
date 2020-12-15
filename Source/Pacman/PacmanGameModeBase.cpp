@@ -62,8 +62,8 @@ void APacmanGameModeBase::PauseGame()
 
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	PlayerController->SetInputMode(FInputModeUIOnly());
-	PlayerController->bShowMouseCursor = true;
 	PlayerController->SetPause(true);
+	PlayerController->bShowMouseCursor = true;
 }
 
 void APacmanGameModeBase::ResumeGame()
@@ -75,8 +75,8 @@ void APacmanGameModeBase::ResumeGame()
 
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	PlayerController->SetInputMode(FInputModeGameOnly());
-	PlayerController->bShowMouseCursor = false;
 	PlayerController->SetPause(false);
+	PlayerController->bShowMouseCursor = false;
 }
 
 void APacmanGameModeBase::BeginNewGame()
