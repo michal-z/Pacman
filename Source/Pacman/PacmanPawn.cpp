@@ -18,12 +18,16 @@ APacmanPawn::APacmanPawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	auto CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
-	CollisionComponent->SetupAttachment(RootComponent);
+	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
 	CollisionComponent->InitSphereRadius(49.0f);
-	CollisionComponent->SetCollisionProfileName(TEXT("Pawn"));
+	CollisionComponent->SetCollisionObjectType(ECC_Pawn);
+	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	CollisionComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
+	CollisionComponent->SetAllUseCCD(true);
 
-	auto VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
+	UStaticMeshComponent* VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
+	VisualComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	VisualComponent->SetupAttachment(CollisionComponent);
 
 	RootComponent = CollisionComponent;
@@ -40,9 +44,8 @@ APacmanPawn::APacmanPawn()
 
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
-	InputVector = FVector(-1.0f, 0.0f, 0.0f);
-	NonBlockingInputVector = FVector::ZeroVector;
-	WantedInputVector = FVector::ZeroVector;
+	CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
+	WantedDirection = CurrentDirection;
 
 	{
 		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_HUD"));
@@ -53,22 +56,22 @@ APacmanPawn::APacmanPawn()
 
 void APacmanPawn::MoveUp()
 {
-	WantedInputVector = FVector(0.0f, -1.0f, 0.0f);
+	WantedDirection = FVector(0.0f, -1.0f, 0.0f);
 }
 
 void APacmanPawn::MoveDown()
 {
-	WantedInputVector = FVector(0.0f, 1.0f, 0.0f);
+	WantedDirection = FVector(0.0f, 1.0f, 0.0f);
 }
 
 void APacmanPawn::MoveRight()
 {
-	WantedInputVector = FVector(1.0f, 0.0f, 0.0f);
+	WantedDirection = FVector(1.0f, 0.0f, 0.0f);
 }
 
 void APacmanPawn::MoveLeft()
 {
-	WantedInputVector = FVector(-1.0f, 0.0f, 0.0f);
+	WantedDirection = FVector(-1.0f, 0.0f, 0.0f);
 }
 
 static AActor* FindActorByName(const FString& Name, UWorld* World)
@@ -91,7 +94,7 @@ static AActor* FindActorByName(const FString& Name, UWorld* World)
 
 void APacmanPawn::BeginPlay()
 {
-	Super::BeginPlay();
+	APawn::BeginPlay();
 
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != TEXT("Main"))
 	{
@@ -99,58 +102,46 @@ void APacmanPawn::BeginPlay()
 		HUDWidget = Cast<UPacmanHUDWidget>(CreateWidget(GetWorld(), HUDWidgetClass));
 		HUDWidget->AddToViewport();
 
-		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-		check(PlayerController);
+		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+		check(PC);
 
 		AActor* Camera = FindActorByName(TEXT("MainCamera"), GetWorld());
 		check(Camera);
 
-		PlayerController->SetViewTarget(Camera);
+		PC->SetViewTarget(Camera);
 	}
 }
 
 void APacmanPawn::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+	APawn::Tick(DeltaTime);
 
-	//UE_LOG(LogTemp, Warning, TEXT("(%f %f)"), InputVector.X, InputVector.Y);
-
+	UWorld* World = GetWorld();
+	if (World)
 	{
-		const FVector Delta = InputVector * DeltaTime * 500.0f;
+		const float Radius = CollisionComponent->GetScaledSphereRadius();
+		const bool bIsBlocked = World->SweepTestByChannel(GetActorLocation(), GetActorLocation() + WantedDirection * Radius * 0.5f, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
 
-		FHitResult Hit;
-		MovementComponent->SafeMoveUpdatedComponent(Delta, FQuat::Identity, true, Hit);
-
-		if (Hit.IsValidBlockingHit())
+		if (!bIsBlocked)
 		{
-			MovementComponent->SlideAlongSurface(Delta, 1.0f - Hit.Time, Hit.Normal, Hit);
-
-			if (!NonBlockingInputVector.IsZero())
-			{
-				InputVector = NonBlockingInputVector;
-			}
-			else if (!WantedInputVector.IsZero())
-			{
-				InputVector = WantedInputVector;
-			}
-
-			NonBlockingInputVector = FVector::ZeroVector;
+			CurrentDirection = WantedDirection;
 		}
-		else
-		{
-			NonBlockingInputVector = InputVector;
+	}
 
-			if (!WantedInputVector.IsZero())
-			{
-				InputVector = WantedInputVector;
-			}
-		}
+	const FVector Delta = CurrentDirection * DeltaTime * 400.0f;
+
+	FHitResult Hit;
+	MovementComponent->SafeMoveUpdatedComponent(Delta, FQuat::Identity, true, Hit);
+
+	if (Hit.IsValidBlockingHit())
+	{
+		MovementComponent->SlideAlongSurface(Delta, 1.0f - Hit.Time, Hit.Normal, Hit);
 	}
 }
 
 void APacmanPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	APawn::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAction(TEXT("MoveUp"), IE_Pressed, this, &APacmanPawn::MoveUp);
 	PlayerInputComponent->BindAction(TEXT("MoveDown"), IE_Pressed, this, &APacmanPawn::MoveDown);
@@ -168,7 +159,7 @@ UPawnMovementComponent* APacmanPawn::GetMovementComponent() const
 
 void APacmanPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 {
-	Super::NotifyActorBeginOverlap(OtherActor);
+	APawn::NotifyActorBeginOverlap(OtherActor);
 
 	APacmanFood* Food = Cast<APacmanFood>(OtherActor);
 	if (Food)

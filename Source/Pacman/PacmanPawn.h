@@ -5,13 +5,13 @@
 
 class UPawnMovementComponent;
 class UPacmanHUDWidget;
+class USphereComponent;
 
 UCLASS()
 class PACMAN_API APacmanPawn : public APawn
 {
-	FVector InputVector;
-	FVector WantedInputVector;
-	FVector NonBlockingInputVector;
+	FVector CurrentDirection;
+	FVector WantedDirection;
 
 	TSubclassOf<UUserWidget> HUDWidgetClass;
 
@@ -22,11 +22,12 @@ class PACMAN_API APacmanPawn : public APawn
 
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
-public:
-	APacmanPawn();
 
 	UPROPERTY()
 	UPawnMovementComponent* MovementComponent;
+
+	UPROPERTY()
+	USphereComponent* CollisionComponent;
 
 	void MoveUp();
 	void MoveDown();
@@ -37,6 +38,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual UPawnMovementComponent* GetMovementComponent() const override;
+
+public:
+	APacmanPawn();
 
 	GENERATED_BODY()
 };
