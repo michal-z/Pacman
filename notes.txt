@@ -1,0 +1,3 @@
+Game info and rules:
+http://gameinternals.com/understanding-pac-man-ghost-behavior
+https://www.gamasutra.com/view/feature/3938/the_pacman_dossier.php?print=1
