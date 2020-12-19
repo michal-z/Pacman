@@ -3,7 +3,6 @@
 #include "Components/TextBlock.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "UObject/ConstructorHelpers.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Blueprint/UserWidget.h"
 #include "PacmanGameModeBase.h"
@@ -42,16 +41,16 @@ APacmanPawn::APacmanPawn()
 	MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
 	MovementComponent->UpdatedComponent = RootComponent;
 
-	AutoPossessPlayer = EAutoReceiveInput::Player0;
-
-	CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
-	WantedDirection = CurrentDirection;
-
 	{
 		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_HUD"));
 		check(Finder.Class);
 		HUDWidgetClass = Finder.Class;
 	}
+
+	CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
+	WantedDirection = CurrentDirection;
+
+	AutoPossessPlayer = EAutoReceiveInput::Player0;
 }
 
 void APacmanPawn::MoveUp()
@@ -94,7 +93,7 @@ static AActor* FindActorByName(const FString& Name, UWorld* World)
 
 void APacmanPawn::BeginPlay()
 {
-	APawn::BeginPlay();
+	Super::BeginPlay();
 
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != TEXT("Main"))
 	{
@@ -114,7 +113,7 @@ void APacmanPawn::BeginPlay()
 
 void APacmanPawn::Tick(float DeltaTime)
 {
-	APawn::Tick(DeltaTime);
+	Super::Tick(DeltaTime);
 
 	UWorld* World = GetWorld();
 	if (World)
@@ -141,7 +140,7 @@ void APacmanPawn::Tick(float DeltaTime)
 
 void APacmanPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	APawn::SetupPlayerInputComponent(PlayerInputComponent);
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAction(TEXT("MoveUp"), IE_Pressed, this, &APacmanPawn::MoveUp);
 	PlayerInputComponent->BindAction(TEXT("MoveDown"), IE_Pressed, this, &APacmanPawn::MoveDown);
@@ -159,7 +158,7 @@ UPawnMovementComponent* APacmanPawn::GetMovementComponent() const
 
 void APacmanPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 {
-	APawn::NotifyActorBeginOverlap(OtherActor);
+	Super::NotifyActorBeginOverlap(OtherActor);
 
 	APacmanFood* Food = Cast<APacmanFood>(OtherActor);
 	if (Food)

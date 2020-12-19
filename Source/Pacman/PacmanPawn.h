@@ -10,6 +10,12 @@ class USphereComponent;
 UCLASS()
 class PACMAN_API APacmanPawn : public APawn
 {
+	GENERATED_BODY()
+
+public:
+	APacmanPawn();
+
+private:
 	FVector CurrentDirection;
 	FVector WantedDirection;
 
@@ -19,9 +25,6 @@ class PACMAN_API APacmanPawn : public APawn
 	UPacmanHUDWidget* HUDWidget = nullptr;
 
 	uint32 Score = 0;
-
-	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
-
 
 	UPROPERTY()
 	UPawnMovementComponent* MovementComponent;
@@ -38,9 +41,5 @@ class PACMAN_API APacmanPawn : public APawn
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual UPawnMovementComponent* GetMovementComponent() const override;
-
-public:
-	APacmanPawn();
-
-	GENERATED_BODY()
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 };

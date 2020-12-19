@@ -30,7 +30,7 @@ void APacmanGameModeBase::BeginPlay()
 	const FString LevelName = UGameplayStatics::GetCurrentLevelName(GetWorld(), true);
 	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, LevelName);
 
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 
 	if (LevelName == TEXT("Main"))
 	{
@@ -39,13 +39,13 @@ void APacmanGameModeBase::BeginPlay()
 		MainMenuWidget = CreateWidget(GetWorld(), MainMenuWidgetClass);
 		MainMenuWidget->AddToViewport();
 
-		PlayerController->SetInputMode(FInputModeUIOnly());
-		PlayerController->bShowMouseCursor = true;
+		PC->SetInputMode(FInputModeUIOnly());
+		PC->bShowMouseCursor = true;
 	}
 	else
 	{
-		PlayerController->SetInputMode(FInputModeGameOnly());
-		PlayerController->bShowMouseCursor = false;
+		PC->SetInputMode(FInputModeGameOnly());
+		PC->bShowMouseCursor = false;
 	}
 }
 
@@ -60,10 +60,10 @@ void APacmanGameModeBase::PauseGame()
 
 	PauseMenuWidget->AddToViewport();
 
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	PlayerController->SetInputMode(FInputModeUIOnly());
-	PlayerController->SetPause(true);
-	PlayerController->bShowMouseCursor = true;
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	PC->SetInputMode(FInputModeUIOnly());
+	PC->SetPause(true);
+	PC->bShowMouseCursor = true;
 }
 
 void APacmanGameModeBase::ResumeGame()
@@ -73,10 +73,10 @@ void APacmanGameModeBase::ResumeGame()
 
 	PauseMenuWidget->RemoveFromViewport();
 
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	PlayerController->SetInputMode(FInputModeGameOnly());
-	PlayerController->SetPause(false);
-	PlayerController->bShowMouseCursor = false;
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	PC->SetInputMode(FInputModeGameOnly());
+	PC->SetPause(false);
+	PC->bShowMouseCursor = false;
 }
 
 void APacmanGameModeBase::BeginNewGame()

@@ -8,6 +8,8 @@ class UButton;
 UCLASS()
 class PACMAN_API UPauseMenuWidget : public UUserWidget
 {
+	GENERATED_BODY()
+
 	UPROPERTY(meta = (BindWidget))
 	UButton* ResumeGameButton;
 
@@ -21,6 +23,4 @@ class PACMAN_API UPauseMenuWidget : public UUserWidget
 
 	UFUNCTION()
 	void OnReturnToMainMenu();
-
-	GENERATED_BODY()
 };

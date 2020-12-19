@@ -6,6 +6,8 @@
 UCLASS()
 class PACMAN_API APacmanGameModeBase : public AGameModeBase
 {
+	GENERATED_BODY()
+
 	TSubclassOf<UUserWidget> MainMenuWidgetClass;
 	TSubclassOf<UUserWidget> PauseMenuWidgetClass;
 
@@ -25,6 +27,4 @@ public:
 	void BeginNewGame();
 	void ReturnToMainMenu();
 	void QuitGame();
-
-	GENERATED_BODY()
 };

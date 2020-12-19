@@ -8,7 +8,9 @@ class UStaticMeshComponent;
 UCLASS()
 class PACMAN_API APacmanFood : public AActor
 {
-public:	
+	GENERATED_BODY()
+
+public:
 	APacmanFood();
 
 	UPROPERTY(EditDefaultsOnly)
@@ -17,6 +19,4 @@ public:
 private:
 	UPROPERTY(VisibleDefaultsOnly)
 	UStaticMeshComponent* MeshComponent = nullptr;
-
-	GENERATED_BODY()
 };
