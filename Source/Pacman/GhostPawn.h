@@ -24,7 +24,6 @@ private:
 	friend class AGhostsManager;
 
 	FVector CurrentDirection;
-	float DirectionUpdateTime;
 	FVector InitialLocation;
 
 	UPROPERTY(EditAnywhere, Category = "Ghost")

@@ -8,7 +8,6 @@
 AGhostsManager::AGhostsManager()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	DirectionUpdateTime = 0.0f;
 }
 
 void AGhostsManager::BeginPlay()
@@ -24,6 +23,8 @@ void AGhostsManager::BeginPlay()
 	{
 		Ghosts.Add(CastChecked<AGhostPawn>(Actor));
 	}
+
+	DirectionUpdateTime = 0.0f;
 }
 
 void AGhostsManager::Tick(float DeltaTime)

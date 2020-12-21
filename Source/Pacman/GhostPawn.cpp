@@ -37,7 +37,6 @@ AGhostPawn::AGhostPawn()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
-	DirectionUpdateTime = 0.0f;
 }
 
 void AGhostPawn::BeginPlay()
@@ -69,5 +68,4 @@ void AGhostPawn::SetInitialState()
 
 	SetActorLocation(InitialLocation, false, nullptr, ETeleportType::ResetPhysics);
 	CurrentDirection = CDO->CurrentDirection;
-	DirectionUpdateTime = CDO->DirectionUpdateTime;
 }
