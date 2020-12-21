@@ -14,10 +14,12 @@ class PACMAN_API AGhostPawn : public APawn
 public:
 	AGhostPawn();
 
+	void SetInitialState();
+
 private:
 	FVector CurrentDirection;
-	FVector WantedDirection;
-	uint32 DirectionCounter;
+	float DirectionUpdateTime;
+	FVector InitialLocation;
 
 	UPROPERTY()
 	USphereComponent* CollisionComponent;
@@ -28,4 +30,5 @@ private:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual UPawnMovementComponent* GetMovementComponent() const override;
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 };

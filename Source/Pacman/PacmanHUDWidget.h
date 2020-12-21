@@ -14,4 +14,7 @@ class PACMAN_API UPacmanHUDWidget : public UUserWidget
 public:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ScoreText;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* LivesText;
 };

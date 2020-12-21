@@ -2,6 +2,7 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Kismet/GameplayStatics.h"
+#include "PacmanGameModeBase.h"
 #include "PacmanPawn.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
@@ -15,6 +16,7 @@ AGhostPawn::AGhostPawn()
 	CollisionComponent->SetCollisionObjectType(ECC_WorldDynamic);
 	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 	CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	CollisionComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	CollisionComponent->SetAllUseCCD(true);
 
 	UStaticMeshComponent* VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
@@ -36,13 +38,14 @@ AGhostPawn::AGhostPawn()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
-	WantedDirection = CurrentDirection;
-	DirectionCounter = 0;
+	DirectionUpdateTime = 0.0f;
 }
 
 void AGhostPawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+	InitialLocation = GetActorLocation();
 }
 
 void AGhostPawn::Tick(float DeltaTime)
@@ -50,17 +53,17 @@ void AGhostPawn::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	check(PC);
-
 	APacmanPawn* Pacman = PC->GetPawn<APacmanPawn>();
-	check(Pacman);
-
 	UWorld* World = GetWorld();
-	check(World);
 
-	if (++DirectionCounter > 30)
+	if (PC == nullptr || Pacman == nullptr || World == nullptr)
 	{
-		DirectionCounter = 0;
+		return;
+	}
+
+	if ((DirectionUpdateTime += DeltaTime) > 0.25f)
+	{
+		DirectionUpdateTime = 0.0f;
 
 		const float Radius = CollisionComponent->GetScaledSphereRadius();
 		const FVector PacmanLocation = Pacman->GetActorLocation();
@@ -68,16 +71,16 @@ void AGhostPawn::Tick(float DeltaTime)
 
 		const FVector Destinations[3] =
 		{
-			GhostLocation + CurrentDirection * Radius * 0.8f,
-			GhostLocation + FVector(CurrentDirection.Y, CurrentDirection.X, 0.0f) * Radius * 0.8f,
-			GhostLocation + FVector(-CurrentDirection.Y, -CurrentDirection.X, 0.0f) * Radius * 0.8f,
+			GhostLocation + CurrentDirection * Radius * 0.5f,
+			GhostLocation + FVector(CurrentDirection.Y, CurrentDirection.X, 0.0f) * Radius * 0.5f,
+			GhostLocation + FVector(-CurrentDirection.Y, -CurrentDirection.X, 0.0f) * Radius * 0.5f,
 		};
 		float Distances[3] = {};
 		bool bIsBlocked[3] = {};
 
 		for (uint32 Idx = 0; Idx < 3; ++Idx)
 		{
-			bIsBlocked[Idx] = World->SweepTestByChannel(GhostLocation, Destinations[Idx], FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(0.25f * Radius));
+			bIsBlocked[Idx] = World->SweepTestByChannel(GhostLocation, Destinations[Idx], FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
 
 			Distances[Idx] = FVector::Distance(Destinations[Idx], PacmanLocation);
 		}
@@ -93,6 +96,8 @@ void AGhostPawn::Tick(float DeltaTime)
 			}
 		}
 		check(SelectedDirection != -1);
+
+		FVector WantedDirection;
 
 		if (SelectedDirection == 0)
 		{
@@ -110,16 +115,8 @@ void AGhostPawn::Tick(float DeltaTime)
 		{
 			check(false);
 		}
-	}
 
-	{
-		//const float Radius = CollisionComponent->GetScaledSphereRadius();
-		//const bool bIsBlocked = World->SweepTestByChannel(GetActorLocation(), GetActorLocation() + WantedDirection * Radius * 0.25f, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(0.9f * Radius));
-
-		//if (!bIsBlocked)
-		{
-			CurrentDirection = WantedDirection;
-		}
+		CurrentDirection = WantedDirection;
 	}
 
 	const FVector Delta = CurrentDirection * DeltaTime * 400.0f;
@@ -136,4 +133,24 @@ void AGhostPawn::Tick(float DeltaTime)
 UPawnMovementComponent* AGhostPawn::GetMovementComponent() const
 {
 	return MovementComponent;
+}
+
+void AGhostPawn::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	Super::NotifyActorBeginOverlap(OtherActor);
+
+	APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode)
+	{
+		GameMode->KillPacman();
+	}
+}
+
+void AGhostPawn::SetInitialState()
+{
+	AGhostPawn* CDO = StaticClass()->GetDefaultObject<AGhostPawn>();
+
+	SetActorLocation(InitialLocation, false, nullptr, ETeleportType::ResetPhysics);
+	CurrentDirection = CDO->CurrentDirection;
+	DirectionUpdateTime = CDO->DirectionUpdateTime;
 }

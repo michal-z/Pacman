@@ -11,7 +11,7 @@
 
 PRAGMA_DISABLE_OPTIMIZATION
 
-#define LOCTEXT_NAMESPACE "Pacman"
+#define LOCTEXT_NAMESPACE "PacmanPawn"
 
 APacmanPawn::APacmanPawn()
 {
@@ -44,13 +44,17 @@ APacmanPawn::APacmanPawn()
 	{
 		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_HUD"));
 		check(Finder.Class);
+
 		HUDWidgetClass = Finder.Class;
+		HUDWidget = nullptr;
 	}
+
+	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
 	CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
 	WantedDirection = CurrentDirection;
-
-	AutoPossessPlayer = EAutoReceiveInput::Player0;
+	Score = 0;
+	NumLives = 3;
 }
 
 void APacmanPawn::MoveUp()
@@ -97,9 +101,14 @@ void APacmanPawn::BeginPlay()
 
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != TEXT("Main"))
 	{
+		InitialLocation = GetActorLocation();
+
 		check(HUDWidgetClass);
 		HUDWidget = Cast<UPacmanHUDWidget>(CreateWidget(GetWorld(), HUDWidgetClass));
 		HUDWidget->AddToViewport();
+
+		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
+		HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), NumLives));
 
 		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
 		check(PC);
@@ -167,6 +176,26 @@ void APacmanPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
 		Food->Destroy();
 	}
+}
+
+uint32 APacmanPawn::Kill()
+{
+	check(NumLives > 0);
+
+	NumLives -= 1;
+
+	HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), NumLives));
+
+	if (NumLives > 0)
+	{
+		SetActorLocation(InitialLocation, false, nullptr, ETeleportType::ResetPhysics);
+
+		APacmanPawn* CDO = StaticClass()->GetDefaultObject<APacmanPawn>();
+		CurrentDirection = CDO->CurrentDirection;
+		WantedDirection = CDO->WantedDirection;
+	}
+
+	return NumLives;
 }
 
 #undef LOCTEXT_NAMESPACE

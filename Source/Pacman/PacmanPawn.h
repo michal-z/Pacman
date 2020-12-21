@@ -15,16 +15,20 @@ class PACMAN_API APacmanPawn : public APawn
 public:
 	APacmanPawn();
 
+	uint32 Kill();
+
 private:
 	FVector CurrentDirection;
 	FVector WantedDirection;
+	FVector InitialLocation;
 
 	TSubclassOf<UUserWidget> HUDWidgetClass;
 
 	UPROPERTY()
-	UPacmanHUDWidget* HUDWidget = nullptr;
+	UPacmanHUDWidget* HUDWidget;
 
-	uint32 Score = 0;
+	uint32 Score;
+	uint32 NumLives;
 
 	UPROPERTY()
 	UPawnMovementComponent* MovementComponent;

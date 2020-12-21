@@ -27,4 +27,5 @@ public:
 	void BeginNewGame();
 	void ReturnToMainMenu();
 	void QuitGame();
+	void KillPacman();
 };

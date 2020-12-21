@@ -2,6 +2,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
 #include "PacmanPawn.h"
+#include "GhostPawn.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
 
@@ -92,4 +93,28 @@ void APacmanGameModeBase::ReturnToMainMenu()
 void APacmanGameModeBase::QuitGame()
 {
 	UKismetSystemLibrary::QuitGame(GetWorld(), nullptr, EQuitPreference::Quit, true);
+}
+
+void APacmanGameModeBase::KillPacman()
+{
+	APacmanPawn* Pacman = Cast<APacmanPawn>(UGameplayStatics::GetActorOfClass(GetWorld(), APacmanPawn::StaticClass()));
+	check(Pacman);
+
+	if (Pacman->Kill() == 0)
+	{
+		ReturnToMainMenu();
+	}
+	else
+	{
+		TArray<AActor*> Ghosts;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGhostPawn::StaticClass(), Ghosts);
+		check(Ghosts.Num() > 0);
+
+		for (AActor* Actor : Ghosts)
+		{
+			AGhostPawn* Ghost = Cast<AGhostPawn>(Actor);
+			check(Ghost);
+			Ghost->SetInitialState();
+		}
+	}
 }
