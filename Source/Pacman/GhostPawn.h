@@ -6,20 +6,29 @@
 class USphereComponent;
 class UPawnMovementComponent;
 
+UENUM()
+enum class EGhostColor : uint8
+{
+	Red,
+	Pink,
+};
+
 UCLASS()
 class PACMAN_API AGhostPawn : public APawn
 {
-	GENERATED_BODY()
-
 public:
 	AGhostPawn();
-
 	void SetInitialState();
 
 private:
+	friend class AGhostsManager;
+
 	FVector CurrentDirection;
 	float DirectionUpdateTime;
 	FVector InitialLocation;
+
+	UPROPERTY(EditAnywhere, Category = "Ghost")
+	EGhostColor GhostColor;
 
 	UPROPERTY()
 	USphereComponent* CollisionComponent;
@@ -28,7 +37,8 @@ private:
 	UPawnMovementComponent* MovementComponent;
 
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
 	virtual UPawnMovementComponent* GetMovementComponent() const override;
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+
+	GENERATED_BODY()
 };

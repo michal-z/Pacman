@@ -10,14 +10,13 @@ class USphereComponent;
 UCLASS()
 class PACMAN_API APacmanPawn : public APawn
 {
-	GENERATED_BODY()
-
 public:
 	APacmanPawn();
-
 	uint32 Kill();
 
 private:
+	friend class AGhostsManager;
+
 	FVector CurrentDirection;
 	FVector WantedDirection;
 	FVector InitialLocation;
@@ -46,4 +45,6 @@ private:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual UPawnMovementComponent* GetMovementComponent() const override;
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+
+	GENERATED_BODY()
 };
