@@ -11,4 +11,6 @@ APacmanFood::APacmanFood()
 	MeshComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
 	RootComponent = MeshComponent;
+
+	Score = 1;
 }

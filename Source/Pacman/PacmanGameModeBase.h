@@ -12,10 +12,10 @@ class PACMAN_API APacmanGameModeBase : public AGameModeBase
 	TSubclassOf<UUserWidget> PauseMenuWidgetClass;
 
 	UPROPERTY()
-	UUserWidget* MainMenuWidget = nullptr;
+	UUserWidget* MainMenuWidget;
 
 	UPROPERTY()
-	UUserWidget* PauseMenuWidget = nullptr;
+	UUserWidget* PauseMenuWidget;
 
 	virtual void BeginPlay() override;
 

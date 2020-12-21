@@ -14,9 +14,9 @@ public:
 	APacmanFood();
 
 	UPROPERTY(EditDefaultsOnly)
-	uint32 Score = 1;
+	uint32 Score;
 
 private:
 	UPROPERTY(VisibleDefaultsOnly)
-	UStaticMeshComponent* MeshComponent = nullptr;
+	UStaticMeshComponent* MeshComponent;
 };

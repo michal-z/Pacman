@@ -13,12 +13,16 @@ APacmanGameModeBase::APacmanGameModeBase()
 	{
 		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_MainMenu"));
 		check(Finder.Class);
+
 		MainMenuWidgetClass = Finder.Class;
+		MainMenuWidget = nullptr;
 	}
 	{
 		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_PauseMenu"));
 		check(Finder.Class);
+
 		PauseMenuWidgetClass = Finder.Class;
+		PauseMenuWidget = nullptr;
 	}
 }
 
