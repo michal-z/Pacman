@@ -18,7 +18,7 @@ AGhostPawn::AGhostPawn()
 	CollisionComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	CollisionComponent->SetAllUseCCD(true);
 
-	UStaticMeshComponent* VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
+	VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
 	VisualComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	VisualComponent->SetupAttachment(CollisionComponent);
 
@@ -37,6 +37,7 @@ AGhostPawn::AGhostPawn()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
+	Speed = 400.0f;
 }
 
 void AGhostPawn::BeginPlay()

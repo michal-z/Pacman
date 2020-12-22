@@ -11,6 +11,8 @@ enum class EGhostColor : uint8
 {
 	Red,
 	Pink,
+	Blue,
+	Orange,
 };
 
 UCLASS()
@@ -29,11 +31,17 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Ghost")
 	EGhostColor GhostColor;
 
+	UPROPERTY(EditAnywhere, Category = "Ghost")
+	float Speed;
+
 	UPROPERTY()
 	USphereComponent* CollisionComponent;
 
 	UPROPERTY()
 	UPawnMovementComponent* MovementComponent;
+
+	UPROPERTY(EditAnywhere, Category = "Components")
+	UStaticMeshComponent* VisualComponent;
 
 	virtual void BeginPlay() override;
 	virtual UPawnMovementComponent* GetMovementComponent() const override;

@@ -35,6 +35,9 @@ private:
 	UPROPERTY()
 	USphereComponent* CollisionComponent;
 
+	UPROPERTY(EditAnywhere, Category = "Components")
+	UStaticMeshComponent* VisualComponent;
+
 	void MoveUp();
 	void MoveDown();
 	void MoveRight();

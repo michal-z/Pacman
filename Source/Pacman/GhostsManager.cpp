@@ -53,17 +53,38 @@ void AGhostsManager::Tick(float DeltaTime)
 			{
 			case EGhostColor::Red:
 				TargetLocation = Pacman->GetActorLocation();
+				//TargetLocation = FVector(950.0f, -650.0f, 50.0f);
 				break;
 			case EGhostColor::Pink:
 				TargetLocation = Pacman->GetActorLocation() + 4 * 100.0f * Pacman->CurrentDirection;
+				//TargetLocation = FVector(-750.0f, -750.0f, 50.0f);
+				break;
+			case EGhostColor::Blue:
+				TargetLocation = Ghosts[0]->GetActorLocation() + 2.0f * ((Pacman->GetActorLocation() + 2 * 100.0f * Pacman->CurrentDirection) - Ghosts[0]->GetActorLocation());
+				//TargetLocation = FVector(450.0f, 950.0f, 50.0f);
+				break;
+			case EGhostColor::Orange: {
+				const float Distance = FVector::Distance(Pacman->GetActorLocation(), GhostLocation);
+				if (Distance >= 8.0f * 100.0f)
+				{
+					TargetLocation = Pacman->GetActorLocation();
+				}
+				else
+				{
+					TargetLocation = FVector(-950.0f, 750.0f, 50.0f);
+				}
 				break;
 			}
+			default:
+				check(false);
+			}
 
+			const float Speed = DeltaTime * Ghost->Speed;
 			const FVector Destinations[3] =
 			{
-				GhostLocation + GhostDirection * Radius * 0.5f,
-				GhostLocation + FVector(GhostDirection.Y, GhostDirection.X, 0.0f) * Radius * 0.5f,
-				GhostLocation + FVector(-GhostDirection.Y, -GhostDirection.X, 0.0f) * Radius * 0.5f,
+				GhostLocation + GhostDirection * Speed,
+				GhostLocation + FVector(GhostDirection.Y, GhostDirection.X, 0.0f) * Speed,
+				GhostLocation + FVector(-GhostDirection.Y, -GhostDirection.X, 0.0f) * Speed,
 			};
 			float Distances[3] = {};
 			bool bIsBlocked[3] = {};
@@ -85,7 +106,6 @@ void AGhostsManager::Tick(float DeltaTime)
 					SelectedDirection = (int32)Idx;
 				}
 			}
-			check(SelectedDirection != -1);
 
 			FVector WantedDirection;
 
@@ -103,7 +123,9 @@ void AGhostsManager::Tick(float DeltaTime)
 			}
 			else
 			{
-				check(false);
+				UE_LOG(LogTemp, Warning, TEXT("GhostsManager: All paths blocked!"));
+				WantedDirection = GhostDirection;
+				DirectionUpdateTime = 1.0f;
 			}
 
 			Ghost->CurrentDirection = WantedDirection;
@@ -112,7 +134,7 @@ void AGhostsManager::Tick(float DeltaTime)
 
 	for (AGhostPawn* Ghost : Ghosts)
 	{
-		const FVector Delta = Ghost->CurrentDirection * DeltaTime * 400.0f;
+		const FVector Delta = Ghost->CurrentDirection * Ghost->Speed * DeltaTime;
 
 		FHitResult Hit;
 		Ghost->MovementComponent->SafeMoveUpdatedComponent(Delta, FQuat::Identity, true, Hit);

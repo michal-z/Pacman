@@ -25,17 +25,21 @@ APacmanPawn::APacmanPawn()
 	CollisionComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
 	CollisionComponent->SetAllUseCCD(true);
 
-	UStaticMeshComponent* VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
+	VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
 	VisualComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	VisualComponent->SetupAttachment(CollisionComponent);
 
 	RootComponent = CollisionComponent;
 
-
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> VisualAsset(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
-	if (VisualAsset.Succeeded())
 	{
-		VisualComponent->SetStaticMesh(VisualAsset.Object);
+		static ConstructorHelpers::FObjectFinder<UStaticMesh> Finder(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
+		check(Finder.Object);
+		VisualComponent->SetStaticMesh(Finder.Object);
+	}
+	{
+		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder(TEXT("/Game/Materials/M_Pacman"));
+		check(Finder.Object);
+		VisualComponent->SetMaterial(0, Finder.Object);
 	}
 
 	MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
