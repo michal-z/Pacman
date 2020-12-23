@@ -103,12 +103,14 @@ void APacmanPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
+	PacmanGameMode = CastChecked<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != TEXT("Main"))
 	{
 		InitialLocation = GetActorLocation();
 
 		check(HUDWidgetClass);
-		HUDWidget = Cast<UPacmanHUDWidget>(CreateWidget(GetWorld(), HUDWidgetClass));
+		HUDWidget = CastChecked<UPacmanHUDWidget>(CreateWidget(GetWorld(), HUDWidgetClass));
 		HUDWidget->AddToViewport();
 
 		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
@@ -127,6 +129,11 @@ void APacmanPawn::BeginPlay()
 void APacmanPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (PacmanGameMode->GetIsReady() == false)
+	{
+		return;
+	}
 
 	UWorld* World = GetWorld();
 	if (World)
@@ -160,7 +167,7 @@ void APacmanPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction(TEXT("MoveRight"), IE_Pressed, this, &APacmanPawn::MoveRight);
 	PlayerInputComponent->BindAction(TEXT("MoveLeft"), IE_Pressed, this, &APacmanPawn::MoveLeft);
 
-	APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	APacmanGameModeBase* GameMode = CastChecked<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 	PlayerInputComponent->BindAction(TEXT("PauseGame"), IE_Pressed, GameMode, &APacmanGameModeBase::PauseGame);
 }
 

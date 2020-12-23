@@ -6,6 +6,7 @@
 class UPawnMovementComponent;
 class UPacmanHUDWidget;
 class USphereComponent;
+class APacmanGameModeBase;
 
 UCLASS()
 class PACMAN_API APacmanPawn : public APawn
@@ -16,6 +17,8 @@ public:
 
 private:
 	friend class AGhostsManager;
+
+	APacmanGameModeBase* PacmanGameMode;
 
 	FVector CurrentDirection;
 	FVector WantedDirection;

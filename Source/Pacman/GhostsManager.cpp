@@ -2,6 +2,7 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Kismet/GameplayStatics.h"
+#include "PacmanGameModeBase.h"
 #include "PacmanPawn.h"
 #include "GhostPawn.h"
 
@@ -13,6 +14,8 @@ AGhostsManager::AGhostsManager()
 void AGhostsManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+	PacmanGameMode = CastChecked<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 
 	Pacman = CastChecked<APacmanPawn>(UGameplayStatics::GetActorOfClass(GetWorld(), APacmanPawn::StaticClass()));
 
@@ -30,6 +33,11 @@ void AGhostsManager::BeginPlay()
 void AGhostsManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (PacmanGameMode->GetIsReady() == false)
+	{
+		return;
+	}
 
 	UWorld* World = GetWorld();
 

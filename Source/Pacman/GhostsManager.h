@@ -3,6 +3,7 @@
 #include "GameFramework/Actor.h"
 #include "GhostsManager.generated.h"
 
+class APacmanGameModeBase;
 class APacmanPawn;
 class AGhostPawn;
 
@@ -13,6 +14,7 @@ public:
 	AGhostsManager();
 
 private:
+	APacmanGameModeBase* PacmanGameMode;
 	APacmanPawn* Pacman;
 	TArray<AGhostPawn*> Ghosts;
 	float DirectionUpdateTime;

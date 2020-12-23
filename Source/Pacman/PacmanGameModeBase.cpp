@@ -1,10 +1,14 @@
 #include "PacmanGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/TextBlock.h"
 #include "Blueprint/UserWidget.h"
 #include "PacmanPawn.h"
 #include "GhostPawn.h"
+#include "GenericInfoWidget.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
+
+#define LOCTEXT_NAMESPACE "PacmanGameModeBase"
 
 APacmanGameModeBase::APacmanGameModeBase()
 {
@@ -24,6 +28,15 @@ APacmanGameModeBase::APacmanGameModeBase()
 		PauseMenuWidgetClass = Finder.Class;
 		PauseMenuWidget = nullptr;
 	}
+	{
+		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_GenericInfo"));
+		check(Finder.Class);
+
+		GenericInfoWidgetClass = Finder.Class;
+		GenericInfoWidget = nullptr;
+	}
+
+	bIsReady = false;
 }
 
 void APacmanGameModeBase::BeginPlay()
@@ -32,9 +45,10 @@ void APacmanGameModeBase::BeginPlay()
 
 	check(GEngine);
 
-	const FString LevelName = UGameplayStatics::GetCurrentLevelName(GetWorld(), true);
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, LevelName);
+	check(GenericInfoWidgetClass);
+	GenericInfoWidget = CastChecked<UGenericInfoWidget>(CreateWidget(GetWorld(), GenericInfoWidgetClass));
 
+	const FString LevelName = UGameplayStatics::GetCurrentLevelName(GetWorld(), true);
 	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 
 	if (LevelName == TEXT("Main"))
@@ -51,6 +65,8 @@ void APacmanGameModeBase::BeginPlay()
 	{
 		PC->SetInputMode(FInputModeGameOnly());
 		PC->bShowMouseCursor = false;
+
+		OpenGenericInfoWidget();
 	}
 }
 
@@ -101,8 +117,7 @@ void APacmanGameModeBase::QuitGame()
 
 void APacmanGameModeBase::KillPacman()
 {
-	APacmanPawn* Pacman = Cast<APacmanPawn>(UGameplayStatics::GetActorOfClass(GetWorld(), APacmanPawn::StaticClass()));
-	check(Pacman);
+	APacmanPawn* Pacman = CastChecked<APacmanPawn>(UGameplayStatics::GetActorOfClass(GetWorld(), APacmanPawn::StaticClass()));
 
 	if (Pacman->Kill() == 0)
 	{
@@ -116,9 +131,33 @@ void APacmanGameModeBase::KillPacman()
 
 		for (AActor* Actor : Ghosts)
 		{
-			AGhostPawn* Ghost = Cast<AGhostPawn>(Actor);
-			check(Ghost);
+			AGhostPawn* Ghost = CastChecked<AGhostPawn>(Actor);
 			Ghost->SetInitialState();
 		}
+
+		OpenGenericInfoWidget();
 	}
 }
+
+void APacmanGameModeBase::OpenGenericInfoWidget()
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		GenericInfoWidget->Text->SetText(LOCTEXT("Ready", "Get Ready!"));
+		GenericInfoWidget->AddToViewport();
+
+		bIsReady = false;
+
+		World->GetTimerManager().SetTimer(Timer, this, &APacmanGameModeBase::CloseGenericInfoWidget, 2.0f);
+	}
+}
+
+void APacmanGameModeBase::CloseGenericInfoWidget()
+{
+	GenericInfoWidget->RemoveFromViewport();
+
+	bIsReady = true;
+}
+
+#undef LOCTEXT_NAMESPACE

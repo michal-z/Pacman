@@ -8,8 +8,6 @@ class UButton;
 UCLASS(Abstract)
 class PACMAN_API UMainMenuWidget : public UUserWidget
 {
-	GENERATED_BODY()
-
 	UPROPERTY(meta = (BindWidget))
 	UButton* NewGameButton;
 
@@ -23,4 +21,6 @@ class PACMAN_API UMainMenuWidget : public UUserWidget
 
 	UFUNCTION()
 	void OnQuitGame();
+
+	GENERATED_BODY()
 };
