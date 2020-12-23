@@ -69,16 +69,9 @@ void AGhostPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 	else
 	{
 		AGhostPawn* OtherGhost = Cast<AGhostPawn>(OtherActor);
-		if (OtherGhost)
+		if (OtherGhost && Frozen != 0.75f)
 		{
-			if (OtherGhost->Speed < Speed)
-			{
-				OtherGhost->Frozen = 0.5f;
-			}
-			else
-			{
-				Frozen = 0.5f;
-			}
+			OtherGhost->Frozen = 0.75f;
 		}
 	}
 }

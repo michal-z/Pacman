@@ -8,15 +8,15 @@ class UStaticMeshComponent;
 UCLASS()
 class PACMAN_API APacmanFood : public AActor
 {
-	GENERATED_BODY()
-
 public:
-	APacmanFood();
-
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Pacman Food")
 	uint32 Score;
 
+	APacmanFood();
+
 private:
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UStaticMeshComponent* MeshComponent;
+
+	GENERATED_BODY()
 };
