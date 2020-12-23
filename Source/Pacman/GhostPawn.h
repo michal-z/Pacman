@@ -22,26 +22,24 @@ public:
 	AGhostPawn();
 	void SetInitialState();
 
-private:
-	friend class AGhostsManager;
-
 	FVector CurrentDirection;
-	FVector InitialLocation;
-
-	UPROPERTY(EditAnywhere, Category = "Ghost")
-	EGhostColor GhostColor;
 
 	UPROPERTY(EditAnywhere, Category = "Ghost")
 	float Speed;
 
-	UPROPERTY()
-	USphereComponent* CollisionComponent;
+	UPROPERTY(EditAnywhere, Category = "Ghost")
+	EGhostColor GhostColor;
 
-	UPROPERTY()
-	UPawnMovementComponent* MovementComponent;
+	UPROPERTY() USphereComponent* CollisionComponent;
+	UPROPERTY() UPawnMovementComponent* MovementComponent;
 
 	UPROPERTY(EditAnywhere, Category = "Components")
 	UStaticMeshComponent* VisualComponent;
+
+private:
+	friend class AGhostsManager;
+
+	FVector InitialLocation;
 
 	virtual void BeginPlay() override;
 	virtual UPawnMovementComponent* GetMovementComponent() const override;

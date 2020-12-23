@@ -15,7 +15,7 @@ PRAGMA_DISABLE_OPTIMIZATION
 
 APacmanPawn::APacmanPawn()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
 	CollisionComponent->InitSphereRadius(49.0f);
@@ -103,8 +103,6 @@ void APacmanPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PacmanGameMode = CastChecked<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != TEXT("Main"))
 	{
 		InitialLocation = GetActorLocation();
@@ -123,38 +121,6 @@ void APacmanPawn::BeginPlay()
 		check(Camera);
 
 		PC->SetViewTarget(Camera);
-	}
-}
-
-void APacmanPawn::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	if (PacmanGameMode->GetIsReady() == false)
-	{
-		return;
-	}
-
-	UWorld* World = GetWorld();
-	if (World)
-	{
-		const float Radius = CollisionComponent->GetScaledSphereRadius();
-		const bool bIsBlocked = World->SweepTestByChannel(GetActorLocation(), GetActorLocation() + WantedDirection * Radius * 0.5f, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
-
-		if (!bIsBlocked)
-		{
-			CurrentDirection = WantedDirection;
-		}
-	}
-
-	const FVector Delta = CurrentDirection * DeltaTime * 400.0f;
-
-	FHitResult Hit;
-	MovementComponent->SafeMoveUpdatedComponent(Delta, FQuat::Identity, true, Hit);
-
-	if (Hit.IsValidBlockingHit())
-	{
-		MovementComponent->SlideAlongSurface(Delta, 1.0f - Hit.Time, Hit.Normal, Hit);
 	}
 }
 
