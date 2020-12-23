@@ -219,7 +219,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			}
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("GhostsManager: All paths blocked!"));
+				UE_LOG(LogTemp, Warning, TEXT("PacmanGameModeBase: All paths blocked!"));
 				WantedDirection = GhostDirection;
 				DirectionUpdateTime = 1.0f;
 			}
@@ -230,6 +230,19 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 
 	for (AGhostPawn* Ghost : Ghosts)
 	{
+		if (Ghost->Frozen > 0.0f)
+		{
+			Ghost->Frozen -= DeltaTime;
+			if (Ghost->Frozen <= 0.0f)
+			{
+				Ghost->Frozen = 0.0f;
+			}
+			else
+			{
+				continue;
+			}
+		}
+
 		const FVector Delta = Ghost->CurrentDirection * Ghost->Speed * DeltaTime;
 
 		FHitResult Hit;

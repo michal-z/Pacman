@@ -19,10 +19,8 @@ UCLASS()
 class PACMAN_API AGhostPawn : public APawn
 {
 public:
-	AGhostPawn();
-	void SetInitialState();
-
 	FVector CurrentDirection;
+	float Frozen;
 
 	UPROPERTY(EditAnywhere, Category = "Ghost")
 	float Speed;
@@ -36,9 +34,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Components")
 	UStaticMeshComponent* VisualComponent;
 
-private:
-	friend class AGhostsManager;
+	AGhostPawn();
+	void SetInitialState();
 
+private:
 	FVector InitialLocation;
 
 	virtual void BeginPlay() override;
