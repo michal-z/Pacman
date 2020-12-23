@@ -41,8 +41,7 @@ private:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
-	void ShowGenericInfoWidget();
-	void HideGenericInfoWidget();
+	void ShowGetReadyInfoWidget();
 	FTimerHandle Timer;
 
 	GENERATED_BODY()

@@ -48,8 +48,6 @@ void APacmanGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	check(GEngine);
-
 	check(GenericInfoWidgetClass);
 	GenericInfoWidget = CastChecked<UGenericInfoWidget>(CreateWidget(GetWorld(), GenericInfoWidgetClass));
 
@@ -86,7 +84,7 @@ void APacmanGameModeBase::BeginPlay()
 		DirectionUpdateTime = 0.0f;
 		bIsInGameLevel = true;
 
-		ShowGenericInfoWidget();
+		ShowGetReadyInfoWidget();
 	}
 }
 
@@ -293,7 +291,16 @@ void APacmanGameModeBase::KillPacman()
 {
 	if (Pacman->Kill() == 0)
 	{
-		ReturnToMainMenu();
+		GenericInfoWidget->Text->SetText(LOCTEXT("GameOver", "Game Over"));
+		GenericInfoWidget->AddToViewport();
+
+		bShowInfoWidget = true;
+
+		GetWorldTimerManager().SetTimer(Timer, [this](){
+			GenericInfoWidget->RemoveFromViewport();
+			bShowInfoWidget = false;
+			ReturnToMainMenu();
+		}, 2.0f, false);
 	}
 	else
 	{
@@ -302,29 +309,21 @@ void APacmanGameModeBase::KillPacman()
 			Ghost->SetInitialState();
 		}
 
-		ShowGenericInfoWidget();
+		ShowGetReadyInfoWidget();
 	}
 }
 
-void APacmanGameModeBase::ShowGenericInfoWidget()
+void APacmanGameModeBase::ShowGetReadyInfoWidget()
 {
-	UWorld* World = GetWorld();
-	if (World)
-	{
-		GenericInfoWidget->Text->SetText(LOCTEXT("Ready", "Get Ready!"));
-		GenericInfoWidget->AddToViewport();
+	GenericInfoWidget->Text->SetText(LOCTEXT("Ready", "Get Ready!"));
+	GenericInfoWidget->AddToViewport();
 
-		bShowInfoWidget = true;
+	bShowInfoWidget = true;
 
-		World->GetTimerManager().SetTimer(Timer, this, &APacmanGameModeBase::HideGenericInfoWidget, 2.0f);
-	}
-}
-
-void APacmanGameModeBase::HideGenericInfoWidget()
-{
-	GenericInfoWidget->RemoveFromViewport();
-
-	bShowInfoWidget = false;
+	GetWorldTimerManager().SetTimer(Timer, [this](){
+		GenericInfoWidget->RemoveFromViewport();
+		bShowInfoWidget = false;
+	}, 2.0f, false);
 }
 
 #undef LOCTEXT_NAMESPACE
