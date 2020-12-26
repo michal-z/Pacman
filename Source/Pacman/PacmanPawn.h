@@ -6,16 +6,24 @@
 class UPawnMovementComponent;
 class UPacmanHUDWidget;
 class USphereComponent;
+class APacmanFood;
 
 UCLASS()
 class PACMAN_API APacmanPawn : public APawn
 {
 public:
+	FVector CurrentDirection;
+	uint32 Score;
+
 	APacmanPawn();
 	uint32 Kill();
+	void Move(float DeltaTime);
 
-	FVector CurrentDirection;
+private:
 	FVector WantedDirection;
+	FVector InitialLocation;
+	uint32 NumLives;
+	uint32 NumFoodLeft;
 
 	UPROPERTY() UPawnMovementComponent* MovementComponent;
 	UPROPERTY() USphereComponent* CollisionComponent;
@@ -23,14 +31,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Components")
 	UStaticMeshComponent* VisualComponent;
 
-private:
-	FVector InitialLocation;
+	TSubclassOf<APacmanFood> SuperFoodClass;
 
 	TSubclassOf<UUserWidget> HUDWidgetClass;
 	UPROPERTY() UPacmanHUDWidget* HUDWidget;
-
-	uint32 Score;
-	uint32 NumLives;
 
 	void MoveUp();
 	void MoveDown();

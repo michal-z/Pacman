@@ -8,6 +8,7 @@
 #include "PacmanGameModeBase.h"
 #include "PacmanHUDWidget.h"
 #include "PacmanFood.h"
+#include "Pacman.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
 
@@ -34,12 +35,10 @@ APacmanPawn::APacmanPawn()
 
 	{
 		static ConstructorHelpers::FObjectFinder<UStaticMesh> Finder(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
-		check(Finder.Object);
 		VisualComponent->SetStaticMesh(Finder.Object);
 	}
 	{
 		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder(TEXT("/Game/Materials/M_Pacman"));
-		check(Finder.Object);
 		VisualComponent->SetMaterial(0, Finder.Object);
 	}
 
@@ -48,17 +47,17 @@ APacmanPawn::APacmanPawn()
 
 	{
 		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_HUD"));
-		check(Finder.Class);
-
 		HUDWidgetClass = Finder.Class;
-		HUDWidget = nullptr;
+	}
+	{
+		static ConstructorHelpers::FClassFinder<APacmanFood> Finder(TEXT("/Game/Blueprints/BP_SuperFood"));
+		SuperFoodClass = Finder.Class;
 	}
 
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
 	CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
 	WantedDirection = CurrentDirection;
-	Score = 0;
 	NumLives = 3;
 }
 
@@ -80,24 +79,6 @@ void APacmanPawn::MoveRight()
 void APacmanPawn::MoveLeft()
 {
 	WantedDirection = FVector(-1.0f, 0.0f, 0.0f);
-}
-
-static AActor* FindActorByName(const FString& Name, UWorld* World)
-{
-	for (ULevel* Level : World->GetLevels())
-	{
-		if (Level && Level->IsCurrentLevel())
-		{
-			for (AActor* Actor : Level->Actors)
-			{
-				if (Actor && Actor->GetName() == TEXT("MainCamera"))
-				{
-					return Actor;
-				}
-			}
-		}
-	}
-	return nullptr;
 }
 
 void APacmanPawn::BeginPlay()
@@ -122,6 +103,10 @@ void APacmanPawn::BeginPlay()
 		check(Camera);
 
 		PC->SetViewTarget(Camera);
+
+		TArray<AActor*> FoodActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), APacmanFood::StaticClass(), FoodActors);
+		NumFoodLeft = FoodActors.Num();
 	}
 }
 
@@ -153,6 +138,17 @@ void APacmanPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 		Score += Food->Score;
 		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
 		Food->Destroy();
+
+		if (--NumFoodLeft == 0)
+		{
+			APacmanGameModeBase* GameMode = CastChecked<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+			GameMode->CompleteLevel();
+		}
+		else if (Food->IsA(SuperFoodClass))
+		{
+			APacmanGameModeBase* GameMode = CastChecked<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+			GameMode->BeginSuperFoodMode();
+		}
 	}
 }
 
@@ -174,6 +170,33 @@ uint32 APacmanPawn::Kill()
 	}
 
 	return NumLives;
+}
+
+void APacmanPawn::Move(float DeltaTime)
+{
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return;
+	}
+
+	const float Radius = CollisionComponent->GetScaledSphereRadius();
+	const bool bIsBlocked = World->SweepTestByChannel(GetActorLocation(), GetActorLocation() + WantedDirection * Radius * 0.5f, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
+
+	if (!bIsBlocked)
+	{
+		CurrentDirection = WantedDirection;
+	}
+
+	const FVector Delta = CurrentDirection * DeltaTime * 400.0f;
+
+	FHitResult Hit;
+	MovementComponent->SafeMoveUpdatedComponent(Delta, FQuat::Identity, true, Hit);
+
+	if (Hit.IsValidBlockingHit())
+	{
+		MovementComponent->SlideAlongSurface(Delta, 1.0f - Hit.Time, Hit.Normal, Hit);
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

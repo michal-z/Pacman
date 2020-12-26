@@ -28,7 +28,6 @@ AGhostPawn::AGhostPawn()
 
 	{
 		static ConstructorHelpers::FObjectFinder<UStaticMesh> Finder(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
-		check(Finder.Object);
 		VisualComponent->SetStaticMesh(Finder.Object);
 	}
 
@@ -39,7 +38,6 @@ AGhostPawn::AGhostPawn()
 
 	CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
 	Speed = 400.0f;
-	Frozen = 0.0f;
 }
 
 void AGhostPawn::BeginPlay()
@@ -58,21 +56,10 @@ void AGhostPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 
-	if (Cast<APacmanPawn>(OtherActor))
+	APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode)
 	{
-		APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-		if (GameMode)
-		{
-			GameMode->KillPacman();
-		}
-	}
-	else
-	{
-		AGhostPawn* OtherGhost = Cast<AGhostPawn>(OtherActor);
-		if (OtherGhost && Frozen != 0.75f)
-		{
-			OtherGhost->Frozen = 0.75f;
-		}
+		GameMode->NotifyGhostBeginOverlap(OtherActor, this);
 	}
 }
 
@@ -82,5 +69,4 @@ void AGhostPawn::SetInitialState()
 
 	SetActorLocation(InitialLocation, false, nullptr, ETeleportType::ResetPhysics);
 	CurrentDirection = CDO->CurrentDirection;
-	Frozen = CDO->Frozen;
 }

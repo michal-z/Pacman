@@ -20,13 +20,12 @@ class PACMAN_API AGhostPawn : public APawn
 {
 public:
 	FVector CurrentDirection;
-	float Frozen;
+	float FrozenTimer;
 
-	UPROPERTY(EditAnywhere, Category = "Ghost")
-	float Speed;
-
-	UPROPERTY(EditAnywhere, Category = "Ghost")
-	EGhostColor GhostColor;
+	UPROPERTY(EditAnywhere, Category = "Ghost") float Speed;
+	UPROPERTY(EditAnywhere, Category = "Ghost") EGhostColor Color;
+	UPROPERTY(EditAnywhere, Category = "Ghost") FVector ScatterTargetLocation;
+	UPROPERTY(EditAnywhere, Category = "Ghost") FVector HomeLocation;
 
 	UPROPERTY() USphereComponent* CollisionComponent;
 	UPROPERTY() UPawnMovementComponent* MovementComponent;

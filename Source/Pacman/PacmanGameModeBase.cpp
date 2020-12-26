@@ -12,6 +12,9 @@ PRAGMA_DISABLE_OPTIMIZATION
 
 #define LOCTEXT_NAMESPACE "PacmanGameModeBase"
 
+constexpr float GMapTileSize = 100.0f;
+constexpr float GSuperFoodModeDuration = 5.0f;
+
 APacmanGameModeBase::APacmanGameModeBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -20,28 +23,28 @@ APacmanGameModeBase::APacmanGameModeBase()
 
 	{
 		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_MainMenu"));
-		check(Finder.Class);
-
 		MainMenuWidgetClass = Finder.Class;
-		MainMenuWidget = nullptr;
 	}
 	{
 		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_PauseMenu"));
-		check(Finder.Class);
-
 		PauseMenuWidgetClass = Finder.Class;
-		PauseMenuWidget = nullptr;
 	}
 	{
 		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_GenericInfo"));
-		check(Finder.Class);
-
 		GenericInfoWidgetClass = Finder.Class;
-		GenericInfoWidget = nullptr;
 	}
-
-	bIsInGameLevel = false;
-	bShowInfoWidget = false;
+	{
+		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder0(TEXT("/Game/Materials/M_RedGhost"));
+		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder1(TEXT("/Game/Materials/M_PinkGhost"));
+		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder2(TEXT("/Game/Materials/M_BlueGhost"));
+		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder3(TEXT("/Game/Materials/M_OrangeGhost"));
+		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder4(TEXT("/Game/Materials/M_GhostSuperFood"));
+		GhostMaterials[0] = Finder0.Object;
+		GhostMaterials[1] = Finder1.Object;
+		GhostMaterials[2] = Finder2.Object;
+		GhostMaterials[3] = Finder3.Object;
+		GhostSuperFoodMaterial = Finder4.Object;
+	}
 }
 
 void APacmanGameModeBase::BeginPlay()
@@ -63,8 +66,6 @@ void APacmanGameModeBase::BeginPlay()
 
 		PC->SetInputMode(FInputModeUIOnly());
 		PC->bShowMouseCursor = true;
-
-		bIsInGameLevel = false;
 	}
 	else
 	{
@@ -81,8 +82,8 @@ void APacmanGameModeBase::BeginPlay()
 			Ghosts.Add(CastChecked<AGhostPawn>(Actor));
 		}
 
-		DirectionUpdateTime = 0.0f;
-		bIsInGameLevel = true;
+		GameLevel = 1;
+		GhostModeTimer = GhostModeDurations[GhostModeIndex];
 
 		ShowGetReadyInfoWidget();
 	}
@@ -92,37 +93,10 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bIsInGameLevel && !bShowInfoWidget)
+	if (GameLevel > 0 && !bShowInfoWidget)
 	{
-		MovePacman(DeltaTime);
+		Pacman->Move(DeltaTime);
 		MoveGhosts(DeltaTime);
-	}
-}
-
-void APacmanGameModeBase::MovePacman(float DeltaTime)
-{
-	UWorld* World = GetWorld();
-	if (World == nullptr)
-	{
-		return;
-	}
-
-	const float Radius = Pacman->CollisionComponent->GetScaledSphereRadius();
-	const bool bIsBlocked = World->SweepTestByChannel(Pacman->GetActorLocation(), Pacman->GetActorLocation() + Pacman->WantedDirection * Radius * 0.5f, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
-
-	if (!bIsBlocked)
-	{
-		Pacman->CurrentDirection = Pacman->WantedDirection;
-	}
-
-	const FVector Delta = Pacman->CurrentDirection * DeltaTime * 400.0f;
-
-	FHitResult Hit;
-	Pacman->MovementComponent->SafeMoveUpdatedComponent(Delta, FQuat::Identity, true, Hit);
-
-	if (Hit.IsValidBlockingHit())
-	{
-		Pacman->MovementComponent->SlideAlongSurface(Delta, 1.0f - Hit.Time, Hit.Normal, Hit);
 	}
 }
 
@@ -134,9 +108,39 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 		return;
 	}
 
-	if ((DirectionUpdateTime += DeltaTime) > 0.25f)
+	if (SuperFoodModeTimer > 0.0f)
 	{
-		DirectionUpdateTime = 0.0f;
+		SuperFoodModeTimer -= DeltaTime;
+		if (SuperFoodModeTimer < 0.0f)
+		{
+			SuperFoodModeTimer = 0.0f;
+
+			Ghosts[0]->VisualComponent->SetMaterial(0, GhostMaterials[0]);
+			Ghosts[1]->VisualComponent->SetMaterial(0, GhostMaterials[1]);
+			Ghosts[2]->VisualComponent->SetMaterial(0, GhostMaterials[2]);
+			Ghosts[3]->VisualComponent->SetMaterial(0, GhostMaterials[3]);
+		}
+	}
+
+	if (GhostModeTimer > 0.0f && SuperFoodModeTimer == 0.0f)
+	{
+		GhostModeTimer -= DeltaTime;
+		if (GhostModeTimer < 0.0f)
+		{
+			if (++GhostModeIndex == _countof(GhostModeDurations))
+			{
+				GhostModeTimer = 0.0f;
+			}
+			else
+			{
+				GhostModeTimer = GhostModeDurations[GhostModeIndex];
+			}
+		}
+	}
+
+	if ((DirectionUpdateTimer += DeltaTime) > 0.25f)
+	{
+		DirectionUpdateTimer = 0.0f;
 
 		for (AGhostPawn* Ghost : Ghosts)
 		{
@@ -145,34 +149,42 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			const FVector GhostDirection = Ghost->CurrentDirection;
 
 			FVector TargetLocation;
-			switch (Ghost->GhostColor)
+			if (SuperFoodModeTimer > 0.0f) // "SuperFood" mode (Ghosts choose max. distance from Pacman).
 			{
-			case EGhostColor::Red:
 				TargetLocation = Pacman->GetActorLocation();
-				//TargetLocation = FVector(950.0f, -650.0f, 50.0f);
-				break;
-			case EGhostColor::Pink:
-				TargetLocation = Pacman->GetActorLocation() + 4 * 100.0f * Pacman->CurrentDirection;
-				//TargetLocation = FVector(-750.0f, -750.0f, 50.0f);
-				break;
-			case EGhostColor::Blue:
-				TargetLocation = Ghosts[0]->GetActorLocation() + 2.0f * ((Pacman->GetActorLocation() + 2 * 100.0f * Pacman->CurrentDirection) - Ghosts[0]->GetActorLocation());
-				//TargetLocation = FVector(450.0f, 950.0f, 50.0f);
-				break;
-			case EGhostColor::Orange: {
-				const float Distance = FVector::Distance(Pacman->GetActorLocation(), GhostLocation);
-				if (Distance >= 8.0f * 100.0f)
-				{
-					TargetLocation = Pacman->GetActorLocation();
-				}
-				else
-				{
-					TargetLocation = FVector(-950.0f, 750.0f, 50.0f);
-				}
-				break;
 			}
-			default:
-				check(false);
+			else if ((GhostModeIndex % 2) == 1) // Odd GhostModeIndex is Chase mode.
+			{
+				switch (Ghost->Color)
+				{
+				case EGhostColor::Red:
+					TargetLocation = Pacman->GetActorLocation();
+					break;
+				case EGhostColor::Pink:
+					TargetLocation = Pacman->GetActorLocation() + 4 * GMapTileSize * Pacman->CurrentDirection;
+					break;
+				case EGhostColor::Blue: {
+					const FVector RedGhostLocation = Ghosts[(int32)EGhostColor::Red]->GetActorLocation();
+					TargetLocation = RedGhostLocation + 2.0f * ((Pacman->GetActorLocation() + 2.0f * GMapTileSize * Pacman->CurrentDirection) - RedGhostLocation);
+					break;
+				}
+				case EGhostColor::Orange: {
+					const float Distance = FVector::Distance(Pacman->GetActorLocation(), GhostLocation);
+					if (Distance >= 8.0f * GMapTileSize)
+					{
+						TargetLocation = Pacman->GetActorLocation();
+					}
+					else
+					{
+						TargetLocation = Ghost->ScatterTargetLocation;
+					}
+					break;
+				}
+				}
+			}
+			else // Even GhostModeIndex is Scatter mode.
+			{
+				TargetLocation = Ghost->ScatterTargetLocation;
 			}
 
 			const float Speed = DeltaTime * Ghost->Speed;
@@ -193,13 +205,28 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			}
 
 			int32 SelectedDirection = -1;
-			float MinDistance = 100000.0f;
-			for (uint32 Idx = 0; Idx < 3; ++Idx)
+			if (SuperFoodModeTimer == 0.0f)
 			{
-				if (bIsBlocked[Idx] == false && Distances[Idx] < MinDistance)
+				float MinDistance = 100000.0f;
+				for (uint32 Idx = 0; Idx < 3; ++Idx)
 				{
-					MinDistance = Distances[Idx];
-					SelectedDirection = (int32)Idx;
+					if (bIsBlocked[Idx] == false && Distances[Idx] < MinDistance)
+					{
+						MinDistance = Distances[Idx];
+						SelectedDirection = (int32)Idx;
+					}
+				}
+			}
+			else
+			{
+				float MaxDistance = 0.0f;
+				for (uint32 Idx = 0; Idx < 3; ++Idx)
+				{
+					if (bIsBlocked[Idx] == false && Distances[Idx] > MaxDistance)
+					{
+						MaxDistance = Distances[Idx];
+						SelectedDirection = (int32)Idx;
+					}
 				}
 			}
 
@@ -221,7 +248,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("PacmanGameModeBase: All paths blocked!"));
 				WantedDirection = GhostDirection;
-				DirectionUpdateTime = 1.0f;
+				DirectionUpdateTimer = 1.0f;
 			}
 
 			Ghost->CurrentDirection = WantedDirection;
@@ -230,12 +257,12 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 
 	for (AGhostPawn* Ghost : Ghosts)
 	{
-		if (Ghost->Frozen > 0.0f)
+		if (Ghost->FrozenTimer > 0.0f)
 		{
-			Ghost->Frozen -= DeltaTime;
-			if (Ghost->Frozen <= 0.0f)
+			Ghost->FrozenTimer -= DeltaTime;
+			if (Ghost->FrozenTimer <= 0.0f)
 			{
-				Ghost->Frozen = 0.0f;
+				Ghost->FrozenTimer = 0.0f;
 			}
 			else
 			{
@@ -243,7 +270,8 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			}
 		}
 
-		const FVector Delta = Ghost->CurrentDirection * Ghost->Speed * DeltaTime;
+		const float GhostSpeed = Ghost->Speed * (SuperFoodModeTimer > 0.0f ? 0.5f : 1.0f);
+		const FVector Delta = Ghost->CurrentDirection * GhostSpeed * DeltaTime;
 
 		FHitResult Hit;
 		Ghost->MovementComponent->SafeMoveUpdatedComponent(Delta, FQuat::Identity, true, Hit);
@@ -300,30 +328,78 @@ void APacmanGameModeBase::QuitGame()
 	UKismetSystemLibrary::QuitGame(GetWorld(), nullptr, EQuitPreference::Quit, true);
 }
 
-void APacmanGameModeBase::KillPacman()
+void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostPawn* InGhost)
 {
-	if (Pacman->Kill() == 0)
+	if (Cast<APacmanPawn>(PacmanOrGhost)) // Pacman - Ghost overlap.
 	{
-		GenericInfoWidget->Text->SetText(LOCTEXT("GameOver", "Game Over"));
-		GenericInfoWidget->AddToViewport();
-
-		bShowInfoWidget = true;
-
-		GetWorldTimerManager().SetTimer(Timer, [this](){
-			GenericInfoWidget->RemoveFromViewport();
-			bShowInfoWidget = false;
-			ReturnToMainMenu();
-		}, 2.0f, false);
-	}
-	else
-	{
-		for (AGhostPawn* Ghost : Ghosts)
+		if (SuperFoodModeTimer > 0.0f)
 		{
-			Ghost->SetInitialState();
+			InGhost->SetInitialState();
+			InGhost->FrozenTimer = 1.0f;
+			Pacman->Score += 100;
+			return;
 		}
 
-		ShowGetReadyInfoWidget();
+		if (Pacman->Kill() == 0)
+		{
+			GenericInfoWidget->Text->SetText(LOCTEXT("GameOver", "Game Over"));
+			GenericInfoWidget->AddToViewport();
+
+			bShowInfoWidget = true;
+
+			GetWorldTimerManager().SetTimer(TimerHandle, [this](){
+				GenericInfoWidget->RemoveFromViewport();
+				bShowInfoWidget = false;
+				ReturnToMainMenu();
+			}, 2.0f, false);
+		}
+		else
+		{
+			for (AGhostPawn* Ghost : Ghosts)
+			{
+				Ghost->SetInitialState();
+			}
+
+			GhostModeIndex = 0;
+			GhostModeTimer = GhostModeDurations[GhostModeIndex];
+			DirectionUpdateTimer = 0.0f;
+			SuperFoodModeTimer = 0.0f;
+
+			ShowGetReadyInfoWidget();
+		}
 	}
+	else // Ghost - Ghost overlap.
+	{
+		AGhostPawn* OtherGhost = Cast<AGhostPawn>(PacmanOrGhost);
+		if (OtherGhost && InGhost->FrozenTimer != 0.75f)
+		{
+			OtherGhost->FrozenTimer = 0.75f;
+		}
+	}
+}
+
+void APacmanGameModeBase::CompleteLevel()
+{
+	GenericInfoWidget->Text->SetText(LOCTEXT("CompleteLevel", "You win! Congratulations!"));
+	GenericInfoWidget->AddToViewport();
+
+	bShowInfoWidget = true;
+
+	GetWorldTimerManager().SetTimer(TimerHandle, [this](){
+		GenericInfoWidget->RemoveFromViewport();
+		bShowInfoWidget = false;
+		ReturnToMainMenu();
+	}, 2.0f, false);
+}
+
+void APacmanGameModeBase::BeginSuperFoodMode()
+{
+	SuperFoodModeTimer = GSuperFoodModeDuration;
+
+	Ghosts[0]->VisualComponent->SetMaterial(0, GhostSuperFoodMaterial);
+	Ghosts[1]->VisualComponent->SetMaterial(0, GhostSuperFoodMaterial);
+	Ghosts[2]->VisualComponent->SetMaterial(0, GhostSuperFoodMaterial);
+	Ghosts[3]->VisualComponent->SetMaterial(0, GhostSuperFoodMaterial);
 }
 
 void APacmanGameModeBase::ShowGetReadyInfoWidget()
@@ -333,7 +409,7 @@ void APacmanGameModeBase::ShowGetReadyInfoWidget()
 
 	bShowInfoWidget = true;
 
-	GetWorldTimerManager().SetTimer(Timer, [this](){
+	GetWorldTimerManager().SetTimer(TimerHandle, [this](){
 		GenericInfoWidget->RemoveFromViewport();
 		bShowInfoWidget = false;
 	}, 2.0f, false);
