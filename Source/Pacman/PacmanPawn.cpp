@@ -147,7 +147,7 @@ void APacmanPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 		else if (Food->IsA(SuperFoodClass))
 		{
 			APacmanGameModeBase* GameMode = CastChecked<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-			GameMode->BeginSuperFoodMode();
+			GameMode->BeginFrightenedMode();
 		}
 	}
 }

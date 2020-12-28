@@ -13,7 +13,7 @@ PRAGMA_DISABLE_OPTIMIZATION
 #define LOCTEXT_NAMESPACE "PacmanGameModeBase"
 
 constexpr float GMapTileSize = 100.0f;
-constexpr float GSuperFoodModeDuration = 5.0f;
+constexpr float GFrightenedModeDuration = 5.0f;
 
 APacmanGameModeBase::APacmanGameModeBase()
 {
@@ -34,16 +34,8 @@ APacmanGameModeBase::APacmanGameModeBase()
 		GenericInfoWidgetClass = Finder.Class;
 	}
 	{
-		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder0(TEXT("/Game/Materials/M_RedGhost"));
-		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder1(TEXT("/Game/Materials/M_PinkGhost"));
-		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder2(TEXT("/Game/Materials/M_BlueGhost"));
-		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder3(TEXT("/Game/Materials/M_OrangeGhost"));
-		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder4(TEXT("/Game/Materials/M_GhostSuperFood"));
-		GhostMaterials[0] = Finder0.Object;
-		GhostMaterials[1] = Finder1.Object;
-		GhostMaterials[2] = Finder2.Object;
-		GhostMaterials[3] = Finder3.Object;
-		GhostSuperFoodMaterial = Finder4.Object;
+		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder(TEXT("/Game/Materials/M_GhostSuperFood"));
+		GhostFrightenedModeMaterial = Finder.Object;
 	}
 }
 
@@ -108,21 +100,22 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 		return;
 	}
 
-	if (SuperFoodModeTimer > 0.0f)
+	if (FrightenedModeTimer > 0.0f)
 	{
-		SuperFoodModeTimer -= DeltaTime;
-		if (SuperFoodModeTimer < 0.0f)
+		FrightenedModeTimer -= DeltaTime;
+		if (FrightenedModeTimer < 0.0f)
 		{
-			SuperFoodModeTimer = 0.0f;
+			FrightenedModeTimer = 0.0f;
 
-			Ghosts[0]->VisualComponent->SetMaterial(0, GhostMaterials[0]);
-			Ghosts[1]->VisualComponent->SetMaterial(0, GhostMaterials[1]);
-			Ghosts[2]->VisualComponent->SetMaterial(0, GhostMaterials[2]);
-			Ghosts[3]->VisualComponent->SetMaterial(0, GhostMaterials[3]);
+			for (AGhostPawn* Ghost : Ghosts)
+			{
+				Ghost->VisualComponent->SetMaterial(0, Ghost->DefaultMaterial);
+				Ghost->bIsFrightened = false;
+			}
 		}
 	}
 
-	if (GhostModeTimer > 0.0f && SuperFoodModeTimer == 0.0f)
+	if (GhostModeTimer > 0.0f && FrightenedModeTimer == 0.0f)
 	{
 		GhostModeTimer -= DeltaTime;
 		if (GhostModeTimer < 0.0f)
@@ -149,7 +142,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			const FVector GhostDirection = Ghost->CurrentDirection;
 
 			FVector TargetLocation;
-			if (SuperFoodModeTimer > 0.0f) // "SuperFood" mode (Ghosts choose max. distance from Pacman).
+			if (FrightenedModeTimer > 0.0f) // "SuperFood" mode (Ghosts choose max. distance from Pacman).
 			{
 				TargetLocation = Pacman->GetActorLocation();
 			}
@@ -205,7 +198,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			}
 
 			int32 SelectedDirection = -1;
-			if (SuperFoodModeTimer == 0.0f)
+			if (FrightenedModeTimer == 0.0f)
 			{
 				float MinDistance = 100000.0f;
 				for (uint32 Idx = 0; Idx < 3; ++Idx)
@@ -257,12 +250,19 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 
 	for (AGhostPawn* Ghost : Ghosts)
 	{
-		if (Ghost->FrozenTimer > 0.0f)
+		if (Ghost->FrozenModeTimer > 0.0f)
 		{
-			Ghost->FrozenTimer -= DeltaTime;
-			if (Ghost->FrozenTimer <= 0.0f)
+			Ghost->FrozenModeTimer -= DeltaTime;
+			if (Ghost->FrozenModeTimer <= 0.0f)
 			{
-				Ghost->FrozenTimer = 0.0f;
+				Ghost->FrozenModeTimer = 0.0f;
+				if (Ghost->bIsInHouse)
+				{
+					Ghost->bIsInHouse = false;
+					Ghost->bIsFrightened = false;
+					Ghost->SetActorLocation(Ghost->SpawnLocation, false, nullptr, ETeleportType::ResetPhysics);
+					Ghost->FrozenModeTimer = 1.0f;
+				}
 			}
 			else
 			{
@@ -270,7 +270,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			}
 		}
 
-		const float GhostSpeed = Ghost->Speed * (SuperFoodModeTimer > 0.0f ? 0.5f : 1.0f);
+		const float GhostSpeed = Ghost->Speed * ((FrightenedModeTimer > 0.0f && Ghost->bIsFrightened) ? 0.5f : 1.0f);
 		const FVector Delta = Ghost->CurrentDirection * GhostSpeed * DeltaTime;
 
 		FHitResult Hit;
@@ -330,12 +330,17 @@ void APacmanGameModeBase::QuitGame()
 
 void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostPawn* InGhost)
 {
+	if (InGhost->bIsInHouse)
+	{
+		return;
+	}
+
 	if (Cast<APacmanPawn>(PacmanOrGhost)) // Pacman - Ghost overlap.
 	{
-		if (SuperFoodModeTimer > 0.0f)
+		if (FrightenedModeTimer > 0.0f && InGhost->bIsFrightened)
 		{
-			InGhost->SetInitialState();
-			InGhost->FrozenTimer = 1.0f;
+			InGhost->TeleportToHouse();
+			InGhost->FrozenModeTimer = 5.0f;
 			Pacman->Score += 100;
 			return;
 		}
@@ -357,13 +362,13 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 		{
 			for (AGhostPawn* Ghost : Ghosts)
 			{
-				Ghost->SetInitialState();
+				Ghost->TeleportToHouse();
 			}
 
 			GhostModeIndex = 0;
 			GhostModeTimer = GhostModeDurations[GhostModeIndex];
 			DirectionUpdateTimer = 0.0f;
-			SuperFoodModeTimer = 0.0f;
+			FrightenedModeTimer = 0.0f;
 
 			ShowGetReadyInfoWidget();
 		}
@@ -371,9 +376,9 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 	else // Ghost - Ghost overlap.
 	{
 		AGhostPawn* OtherGhost = Cast<AGhostPawn>(PacmanOrGhost);
-		if (OtherGhost && InGhost->FrozenTimer != 0.75f)
+		if (OtherGhost && InGhost->FrozenModeTimer != 0.75f)
 		{
-			OtherGhost->FrozenTimer = 0.75f;
+			OtherGhost->FrozenModeTimer = 0.75f;
 		}
 	}
 }
@@ -392,14 +397,18 @@ void APacmanGameModeBase::CompleteLevel()
 	}, 2.0f, false);
 }
 
-void APacmanGameModeBase::BeginSuperFoodMode()
+void APacmanGameModeBase::BeginFrightenedMode()
 {
-	SuperFoodModeTimer = GSuperFoodModeDuration;
+	FrightenedModeTimer = GFrightenedModeDuration;
 
-	Ghosts[0]->VisualComponent->SetMaterial(0, GhostSuperFoodMaterial);
-	Ghosts[1]->VisualComponent->SetMaterial(0, GhostSuperFoodMaterial);
-	Ghosts[2]->VisualComponent->SetMaterial(0, GhostSuperFoodMaterial);
-	Ghosts[3]->VisualComponent->SetMaterial(0, GhostSuperFoodMaterial);
+	for (AGhostPawn* Ghost : Ghosts)
+	{
+		if (Ghost->bIsInHouse == false)
+		{
+			Ghost->bIsFrightened = true;
+			Ghost->VisualComponent->SetMaterial(0, GhostFrightenedModeMaterial);
+		}
+	}
 }
 
 void APacmanGameModeBase::ShowGetReadyInfoWidget()

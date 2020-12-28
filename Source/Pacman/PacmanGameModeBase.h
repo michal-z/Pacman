@@ -20,17 +20,16 @@ public:
 	void QuitGame();
 	void NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostPawn* InGhost);
 	void CompleteLevel();
-	void BeginSuperFoodMode();
+	void BeginFrightenedMode();
 
 private:
 	bool bShowInfoWidget;
 	uint32 GameLevel;
 	APacmanPawn* Pacman;
 	TArray<AGhostPawn*> Ghosts;
-	UMaterialInstance* GhostMaterials[4];
-	UMaterialInstance* GhostSuperFoodMaterial;
+	UMaterialInstance* GhostFrightenedModeMaterial;
+	float FrightenedModeTimer;
 	float DirectionUpdateTimer;
-	float SuperFoodModeTimer;
 	// Odd GhostModeIndex is Scatter mode. Even GhostModeIndex is Chase mode.
 	static constexpr float GhostModeDurations[] = { 7.0f, 20.0f, 5.0f, 20.0f, 3.0f };
 	float GhostModeTimer;

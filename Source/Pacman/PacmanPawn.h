@@ -28,7 +28,7 @@ private:
 	UPROPERTY() UPawnMovementComponent* MovementComponent;
 	UPROPERTY() USphereComponent* CollisionComponent;
 
-	UPROPERTY(EditAnywhere, Category = "Components")
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* VisualComponent;
 
 	TSubclassOf<APacmanFood> SuperFoodClass;

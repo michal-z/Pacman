@@ -38,13 +38,16 @@ AGhostPawn::AGhostPawn()
 
 	CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
 	Speed = 400.0f;
+	bIsInHouse = true;
 }
 
 void AGhostPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	InitialLocation = GetActorLocation();
+	HouseLocation = GetActorLocation();
+	DefaultMaterial = VisualComponent->GetMaterial(0);
+	FrozenModeTimer = LeaveHouseTime;
 }
 
 UPawnMovementComponent* AGhostPawn::GetMovementComponent() const
@@ -63,10 +66,14 @@ void AGhostPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 	}
 }
 
-void AGhostPawn::SetInitialState()
+void AGhostPawn::TeleportToHouse()
 {
 	AGhostPawn* CDO = StaticClass()->GetDefaultObject<AGhostPawn>();
 
-	SetActorLocation(InitialLocation, false, nullptr, ETeleportType::ResetPhysics);
+	SetActorLocation(HouseLocation, false, nullptr, ETeleportType::ResetPhysics);
+	VisualComponent->SetMaterial(0, DefaultMaterial);
 	CurrentDirection = CDO->CurrentDirection;
+	bIsInHouse = true;
+	bIsFrightened = false;
+	FrozenModeTimer = LeaveHouseTime;
 }
