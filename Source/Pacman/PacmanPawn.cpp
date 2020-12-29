@@ -8,7 +8,6 @@
 #include "PacmanGameModeBase.h"
 #include "PacmanHUDWidget.h"
 #include "PacmanFood.h"
-#include "Pacman.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
 
@@ -95,14 +94,6 @@ void APacmanPawn::BeginPlay()
 
 		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
 		HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), NumLives));
-
-		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
-		check(PC);
-
-		AActor* Camera = FindActorByName(TEXT("MainCamera"), GetWorld());
-		check(Camera);
-
-		PC->SetViewTarget(Camera);
 
 		TArray<AActor*> FoodActors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), APacmanFood::StaticClass(), FoodActors);
