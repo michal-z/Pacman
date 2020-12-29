@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Blueprint/UserWidget.h"
 #include "PauseMenuWidget.generated.h"
 

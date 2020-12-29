@@ -1,5 +1,4 @@
 #pragma once
-
 #include "GameFramework/Pawn.h"
 #include "PacmanPawn.generated.h"
 

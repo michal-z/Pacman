@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Blueprint/UserWidget.h"
 #include "MainMenuWidget.generated.h"
 

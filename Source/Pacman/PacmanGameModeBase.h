@@ -1,5 +1,4 @@
 #pragma once
-
 #include "GameFramework/GameModeBase.h"
 #include "PacmanGameModeBase.generated.h"
 

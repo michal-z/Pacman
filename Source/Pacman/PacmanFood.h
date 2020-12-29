@@ -1,5 +1,4 @@
 #pragma once
-
 #include "GameFramework/Actor.h"
 #include "PacmanFood.generated.h"
 

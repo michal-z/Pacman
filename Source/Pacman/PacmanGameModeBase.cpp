@@ -142,7 +142,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			const FVector GhostDirection = Ghost->CurrentDirection;
 
 			FVector TargetLocation;
-			if (FrightenedModeTimer > 0.0f) // "SuperFood" mode (Ghosts choose max. distance from Pacman).
+			if (FrightenedModeTimer > 0.0f) // "Frightened mode" (Ghosts choose max. distance from Pacman).
 			{
 				TargetLocation = Pacman->GetActorLocation();
 			}
