@@ -8,7 +8,9 @@ class UTextBlock;
 UCLASS(Abstract)
 class PACMAN_API UGenericInfoWidget : public UUserWidget
 {
-	public: UPROPERTY(meta = (BindWidget)) UTextBlock* Text;
+public:
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* Text;
 
 	GENERATED_BODY()
 };

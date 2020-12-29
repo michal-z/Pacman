@@ -8,13 +8,13 @@ class UButton;
 UCLASS(Abstract)
 class PACMAN_API UMainMenuWidget : public UUserWidget
 {
-	private: UPROPERTY(meta = (BindWidget)) UButton* NewGameButton;
-	private: UPROPERTY(meta = (BindWidget)) UButton* QuitGameButton;
+	UPROPERTY(meta = (BindWidget)) UButton* NewGameButton;
+	UPROPERTY(meta = (BindWidget)) UButton* QuitGameButton;
 
-	private: virtual void NativeConstruct() override;
+	virtual void NativeConstruct() override;
 
-	private: UFUNCTION() void OnNewGame();
-	private: UFUNCTION() void OnQuitGame();
+	UFUNCTION() void OnNewGame();
+	UFUNCTION() void OnQuitGame();
 
 	GENERATED_BODY()
 };

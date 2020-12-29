@@ -10,40 +10,46 @@ class AGhostPawn;
 UCLASS()
 class PACMAN_API APacmanGameModeBase : public AGameModeBase
 {
-	private: bool bShowInfoWidget;
-	private: uint32 GameLevel;
-	private: APacmanPawn* Pacman;
-	private: TArray<AGhostPawn*> Ghosts;
-	private: UMaterialInstance* GhostFrightenedModeMaterial;
-	private: float FrightenedModeTimer;
-	private: float DirectionUpdateTimer;
+public:
+	APacmanGameModeBase();
+
+	void PauseGame();
+	void ResumeGame();
+	void BeginNewGame();
+	void ReturnToMainMenu();
+	void QuitGame();
+	void NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostPawn* InGhost);
+	void CompleteLevel();
+	void BeginFrightenedMode();
+
+private:
+	bool bShowInfoWidget;
+	uint32 GameLevel;
+	APacmanPawn* Pacman;
+	TArray<AGhostPawn*> Ghosts;
+	UMaterialInstance* GhostFrightenedModeMaterial;
+	float FrightenedModeTimer;
+	float DirectionUpdateTimer;
 	// Odd GhostModeIndex is Scatter mode. Even GhostModeIndex is Chase mode.
-	private: static constexpr float GhostModeDurations[] = { 7.0f, 20.0f, 5.0f, 20.0f, 3.0f };
-	private: float GhostModeTimer;
-	private: uint32 GhostModeIndex;
-	private: FTimerHandle TimerHandle;
-	private: TSubclassOf<UUserWidget> MainMenuWidgetClass;
-	private: TSubclassOf<UUserWidget> PauseMenuWidgetClass;
-	private: TSubclassOf<UUserWidget> GenericInfoWidgetClass;
+	static constexpr float GhostModeDurations[] = { 7.0f, 20.0f, 5.0f, 20.0f, 3.0f };
+	float GhostModeTimer;
+	uint32 GhostModeIndex;
 
-	private: UPROPERTY() UUserWidget* MainMenuWidget;
-	private: UPROPERTY() UUserWidget* PauseMenuWidget;
-	private: UPROPERTY() UGenericInfoWidget* GenericInfoWidget;
+	void MoveGhosts(float DeltaTime);
 
+	TSubclassOf<UUserWidget> MainMenuWidgetClass;
+	TSubclassOf<UUserWidget> PauseMenuWidgetClass;
+	TSubclassOf<UUserWidget> GenericInfoWidgetClass;
 
-	public: APacmanGameModeBase();
-	public: void PauseGame();
-	public: void ResumeGame();
-	public: void BeginNewGame();
-	public: void ReturnToMainMenu();
-	public: void QuitGame();
-	public: void NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostPawn* InGhost);
-	public: void CompleteLevel();
-	public: void BeginFrightenedMode();
-	private: void MoveGhosts(float DeltaTime);
-	private: virtual void BeginPlay() override;
-	private: virtual void Tick(float DeltaTime) override;
-	private: void ShowGetReadyInfoWidget();
+	UPROPERTY() UUserWidget* MainMenuWidget;
+	UPROPERTY() UUserWidget* PauseMenuWidget;
+	UPROPERTY() UGenericInfoWidget* GenericInfoWidget;
+
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
+
+	void ShowGetReadyInfoWidget();
+	FTimerHandle TimerHandle;
 
 	GENERATED_BODY()
 };
