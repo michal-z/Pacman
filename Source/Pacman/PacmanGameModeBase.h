@@ -6,8 +6,7 @@ class UGenericInfoWidget;
 class APacmanPawn;
 class AGhostPawn;
 
-UCLASS()
-class PACMAN_API APacmanGameModeBase : public AGameModeBase
+UCLASS() class PACMAN_API APacmanGameModeBase : public AGameModeBase
 {
 	private: bool bShowInfoWidget;
 	private: uint32 GameLevel;

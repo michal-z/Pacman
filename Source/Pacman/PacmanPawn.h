@@ -7,8 +7,7 @@ class UPacmanHUDWidget;
 class USphereComponent;
 class APacmanFood;
 
-UCLASS()
-class PACMAN_API APacmanPawn : public APawn
+UCLASS() class PACMAN_API APacmanPawn : public APawn
 {
 	public: FVector CurrentDirection;
 	public: uint32 Score;
@@ -23,7 +22,8 @@ class PACMAN_API APacmanPawn : public APawn
 	private: UPROPERTY() USphereComponent* CollisionComponent;
 	private: UPROPERTY() UPacmanHUDWidget* HUDWidget;
 
-	private: UPROPERTY(VisibleAnywhere, Category = "Components") UStaticMeshComponent* VisualComponent;
+	private: UPROPERTY(VisibleAnywhere, Category = "Components")
+			 UStaticMeshComponent* VisualComponent;
 
 
 	public: APacmanPawn();

@@ -5,8 +5,7 @@
 class USphereComponent;
 class UPawnMovementComponent;
 
-UENUM()
-enum class EGhostColor : uint8
+UENUM() enum class EGhostColor : uint8
 {
 	Red,
 	Pink,
@@ -14,8 +13,7 @@ enum class EGhostColor : uint8
 	Orange,
 };
 
-UCLASS()
-class PACMAN_API AGhostPawn : public APawn
+UCLASS() class PACMAN_API AGhostPawn : public APawn
 {
 	public: FVector CurrentDirection;
 	public: float FrozenModeTimer;
@@ -24,16 +22,26 @@ class PACMAN_API AGhostPawn : public APawn
 	public: UMaterialInterface* DefaultMaterial;
 	private: FVector HouseLocation;
 
-	public: UPROPERTY(EditAnywhere, Category = "Ghost") float Speed;
-	public: UPROPERTY(EditAnywhere, Category = "Ghost") float LeaveHouseTime;
-	public: UPROPERTY(EditAnywhere, Category = "Ghost") EGhostColor Color;
-	public: UPROPERTY(EditAnywhere, Category = "Ghost") FVector ScatterTargetLocation;
-	public: UPROPERTY(EditAnywhere, Category = "Ghost") FVector SpawnLocation;
+	public: UPROPERTY(EditAnywhere, Category = "Ghost")
+			float Speed;
+
+	public: UPROPERTY(EditAnywhere, Category = "Ghost")
+			float LeaveHouseTime;
+
+	public: UPROPERTY(EditAnywhere, Category = "Ghost")
+			EGhostColor Color;
+
+	public: UPROPERTY(EditAnywhere, Category = "Ghost")
+			FVector ScatterTargetLocation;
+
+	public: UPROPERTY(EditAnywhere, Category = "Ghost")
+			FVector SpawnLocation;
 
 	public: UPROPERTY() USphereComponent* CollisionComponent;
 	public: UPROPERTY() UPawnMovementComponent* MovementComponent;
 
-	public: UPROPERTY(VisibleAnywhere, Category = "Components") UStaticMeshComponent* VisualComponent;
+	public: UPROPERTY(VisibleAnywhere, Category = "Components")
+			UStaticMeshComponent* VisualComponent;
 
 
 	public: AGhostPawn();
