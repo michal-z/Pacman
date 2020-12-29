@@ -9,9 +9,8 @@ class UButton;
 UCLASS(Abstract)
 class PACMAN_API UPacmanHUDWidget : public UUserWidget
 {
-public:
-	UPROPERTY(meta = (BindWidget)) UTextBlock* ScoreText;
-	UPROPERTY(meta = (BindWidget)) UTextBlock* LivesText;
+	public: UPROPERTY(meta = (BindWidget)) UTextBlock* ScoreText;
+	public: UPROPERTY(meta = (BindWidget)) UTextBlock* LivesText;
 
 	GENERATED_BODY()
 };

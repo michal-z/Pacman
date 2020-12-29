@@ -18,34 +18,30 @@ enum class EGhostColor : uint8
 UCLASS()
 class PACMAN_API AGhostPawn : public APawn
 {
-public:
-	FVector CurrentDirection;
-	float FrozenModeTimer;
-	bool bIsInHouse;
-	bool bIsFrightened;
-	UMaterialInterface* DefaultMaterial;
+	public: FVector CurrentDirection;
+	public: float FrozenModeTimer;
+	public: bool bIsInHouse;
+	public: bool bIsFrightened;
+	public: UMaterialInterface* DefaultMaterial;
+	private: FVector HouseLocation;
 
-	UPROPERTY(EditAnywhere, Category = "Ghost") float Speed;
-	UPROPERTY(EditAnywhere, Category = "Ghost") float LeaveHouseTime;
-	UPROPERTY(EditAnywhere, Category = "Ghost") EGhostColor Color;
-	UPROPERTY(EditAnywhere, Category = "Ghost") FVector ScatterTargetLocation;
-	UPROPERTY(EditAnywhere, Category = "Ghost") FVector SpawnLocation;
+	public: UPROPERTY(EditAnywhere, Category = "Ghost") float Speed;
+	public: UPROPERTY(EditAnywhere, Category = "Ghost") float LeaveHouseTime;
+	public: UPROPERTY(EditAnywhere, Category = "Ghost") EGhostColor Color;
+	public: UPROPERTY(EditAnywhere, Category = "Ghost") FVector ScatterTargetLocation;
+	public: UPROPERTY(EditAnywhere, Category = "Ghost") FVector SpawnLocation;
 
-	UPROPERTY() USphereComponent* CollisionComponent;
-	UPROPERTY() UPawnMovementComponent* MovementComponent;
+	public: UPROPERTY() USphereComponent* CollisionComponent;
+	public: UPROPERTY() UPawnMovementComponent* MovementComponent;
 
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* VisualComponent;
+	public: UPROPERTY(VisibleAnywhere, Category = "Components") UStaticMeshComponent* VisualComponent;
 
-	AGhostPawn();
-	void TeleportToHouse();
 
-private:
-	FVector HouseLocation;
-
-	virtual void BeginPlay() override;
-	virtual UPawnMovementComponent* GetMovementComponent() const override;
-	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+	public: AGhostPawn();
+	public: void TeleportToHouse();
+	private: virtual void BeginPlay() override;
+	private: virtual UPawnMovementComponent* GetMovementComponent() const override;
+	private: virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
 	GENERATED_BODY()
 };
