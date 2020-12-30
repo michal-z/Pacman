@@ -9,34 +9,37 @@ class APacmanFood;
 
 UCLASS() class PACMAN_API APacmanPawn : public APawn
 {
-	public: FVector CurrentDirection;
-	public: uint32 Score;
-	private: FVector WantedDirection;
-	private: FVector InitialLocation;
-	private: uint32 NumLives;
-	private: uint32 NumFoodLeft;
-	private: TSubclassOf<APacmanFood> SuperFoodClass;
-	private: TSubclassOf<UUserWidget> HUDWidgetClass;
+public:
+	FVector CurrentDirection;
+	uint32 Score;
+private:
+	FVector WantedDirection;
+	FVector InitialLocation;
+	uint32 NumLives;
+	uint32 NumFoodLeft;
+	TSubclassOf<APacmanFood> SuperFoodClass;
+	TSubclassOf<UUserWidget> HUDWidgetClass;
 
-	private: UPROPERTY() UPawnMovementComponent* MovementComponent;
-	private: UPROPERTY() USphereComponent* CollisionComponent;
-	private: UPROPERTY() UPacmanHUDWidget* HUDWidget;
+	UPROPERTY() UPawnMovementComponent* MovementComponent;
+	UPROPERTY() USphereComponent* CollisionComponent;
+	UPROPERTY() UPacmanHUDWidget* HUDWidget;
 
-	private: UPROPERTY(VisibleAnywhere, Category = "Components")
-			 UStaticMeshComponent* VisualComponent;
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UStaticMeshComponent* VisualComponent;
 
-
-	public: APacmanPawn();
-	public: uint32 Kill();
-	public: void Move(float DeltaTime);
-	private: void MoveUp();
-	private: void MoveDown();
-	private: void MoveRight();
-	private: void MoveLeft();
-	private: virtual void BeginPlay() override;
-	private: virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-	private: virtual UPawnMovementComponent* GetMovementComponent() const override;
-	private: virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+public:
+	APacmanPawn();
+	uint32 Kill();
+	void Move(float DeltaTime);
+private:
+	void MoveUp();
+	void MoveDown();
+	void MoveRight();
+	void MoveLeft();
+	virtual void BeginPlay() override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	virtual UPawnMovementComponent* GetMovementComponent() const override;
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
 	GENERATED_BODY()
 };
