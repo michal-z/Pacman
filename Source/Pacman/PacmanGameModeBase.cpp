@@ -17,25 +17,24 @@ constexpr float GFrightenedModeDuration = 5.0f;
 
 APacmanGameModeBase::APacmanGameModeBase()
 {
-	PrimaryActorTick.bCanEverTick = true;
-
-	DefaultPawnClass = APacmanPawn::StaticClass();
+	Self.PrimaryActorTick.bCanEverTick = true;
+	Self.DefaultPawnClass = APacmanPawn::StaticClass();
 
 	{
 		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_MainMenu"));
-		MainMenuWidgetClass = Finder.Class;
+		Self.MainMenuWidgetClass = Finder.Class;
 	}
 	{
 		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_PauseMenu"));
-		PauseMenuWidgetClass = Finder.Class;
+		Self.PauseMenuWidgetClass = Finder.Class;
 	}
 	{
 		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_GenericInfo"));
-		GenericInfoWidgetClass = Finder.Class;
+		Self.GenericInfoWidgetClass = Finder.Class;
 	}
 	{
 		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder(TEXT("/Game/Materials/M_GhostSuperFood"));
-		GhostFrightenedModeMaterial = Finder.Object;
+		Self.GhostFrightenedModeMaterial = Finder.Object;
 	}
 }
 
@@ -43,18 +42,18 @@ void APacmanGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	check(GenericInfoWidgetClass);
-	GenericInfoWidget = CastChecked<UGenericInfoWidget>(CreateWidget(GetWorld(), GenericInfoWidgetClass));
+	check(Self.GenericInfoWidgetClass);
+	Self.GenericInfoWidget = CastChecked<UGenericInfoWidget>(CreateWidget(GetWorld(), Self.GenericInfoWidgetClass));
 
 	const FString LevelName = UGameplayStatics::GetCurrentLevelName(GetWorld(), true);
 	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 
 	if (LevelName == TEXT("Main"))
 	{
-		check(MainMenuWidgetClass);
+		check(Self.MainMenuWidgetClass);
 
-		MainMenuWidget = CreateWidget(GetWorld(), MainMenuWidgetClass);
-		MainMenuWidget->AddToViewport();
+		Self.MainMenuWidget = CreateWidget(GetWorld(), Self.MainMenuWidgetClass);
+		Self.MainMenuWidget->AddToViewport();
 
 		PC->SetInputMode(FInputModeUIOnly());
 		PC->bShowMouseCursor = true;
@@ -64,18 +63,18 @@ void APacmanGameModeBase::BeginPlay()
 		PC->SetInputMode(FInputModeGameOnly());
 		PC->bShowMouseCursor = false;
 
-		Pacman = CastChecked<APacmanPawn>(UGameplayStatics::GetActorOfClass(GetWorld(), APacmanPawn::StaticClass()));
+		Self.Pacman = CastChecked<APacmanPawn>(UGameplayStatics::GetActorOfClass(GetWorld(), APacmanPawn::StaticClass()));
 
 		TArray<AActor*> GhostActors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGhostPawn::StaticClass(), GhostActors);
 
 		for (AActor* Actor : GhostActors)
 		{
-			Ghosts.Add(CastChecked<AGhostPawn>(Actor));
+			Self.Ghosts.Add(CastChecked<AGhostPawn>(Actor));
 		}
 
-		GameLevel = 1;
-		GhostModeTimer = GhostModeDurations[GhostModeIndex];
+		Self.GameLevel = 1;
+		Self.GhostModeTimer = Self.GhostModeDurations[Self.GhostModeIndex];
 
 		ShowGetReadyInfoWidget();
 	}
@@ -85,9 +84,9 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (GameLevel > 0 && !bShowInfoWidget)
+	if (Self.GameLevel > 0 && !Self.bShowInfoWidget)
 	{
-		Pacman->Move(DeltaTime);
+		Self.Pacman->Move(DeltaTime);
 		MoveGhosts(DeltaTime);
 	}
 }
@@ -100,14 +99,14 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 		return;
 	}
 
-	if (FrightenedModeTimer > 0.0f)
+	if (Self.FrightenedModeTimer > 0.0f)
 	{
-		FrightenedModeTimer -= DeltaTime;
-		if (FrightenedModeTimer < 0.0f)
+		Self.FrightenedModeTimer -= DeltaTime;
+		if (Self.FrightenedModeTimer < 0.0f)
 		{
-			FrightenedModeTimer = 0.0f;
+			Self.FrightenedModeTimer = 0.0f;
 
-			for (AGhostPawn* Ghost : Ghosts)
+			for (AGhostPawn* Ghost : Self.Ghosts)
 			{
 				Ghost->VisualComponent->SetMaterial(0, Ghost->DefaultMaterial);
 				Ghost->bIsFrightened = false;
@@ -115,59 +114,59 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 		}
 	}
 
-	if (GhostModeTimer > 0.0f && FrightenedModeTimer == 0.0f)
+	if (Self.GhostModeTimer > 0.0f && Self.FrightenedModeTimer == 0.0f)
 	{
-		GhostModeTimer -= DeltaTime;
-		if (GhostModeTimer < 0.0f)
+		Self.GhostModeTimer -= DeltaTime;
+		if (Self.GhostModeTimer < 0.0f)
 		{
-			if (++GhostModeIndex == _countof(GhostModeDurations))
+			if (++Self.GhostModeIndex == _countof(Self.GhostModeDurations))
 			{
-				GhostModeTimer = 0.0f;
+				Self.GhostModeTimer = 0.0f;
 			}
 			else
 			{
-				GhostModeTimer = GhostModeDurations[GhostModeIndex];
+				Self.GhostModeTimer = Self.GhostModeDurations[Self.GhostModeIndex];
 			}
 		}
 	}
 
-	if ((DirectionUpdateTimer += DeltaTime) > 0.25f)
+	if ((Self.DirectionUpdateTimer += DeltaTime) > 0.25f)
 	{
-		DirectionUpdateTimer = 0.0f;
+		Self.DirectionUpdateTimer = 0.0f;
 
-		for (AGhostPawn* Ghost : Ghosts)
+		for (AGhostPawn* Ghost : Self.Ghosts)
 		{
 			const float Radius = Ghost->CollisionComponent->GetScaledSphereRadius();
 			const FVector GhostLocation = Ghost->GetActorLocation();
 			const FVector GhostDirection = Ghost->CurrentDirection;
 
 			FVector TargetLocation;
-			if (FrightenedModeTimer > 0.0f) // "Frightened mode" (Ghosts choose max. distance from Pacman).
+			if (Self.FrightenedModeTimer > 0.0f) // "Frightened mode" (Ghosts choose max. distance from Pacman).
 			{
-				TargetLocation = Pacman->GetActorLocation();
+				TargetLocation = Self.Pacman->GetActorLocation();
 			}
-			else if ((GhostModeIndex % 2) == 1) // Odd GhostModeIndex is Chase mode.
+			else if ((Self.GhostModeIndex % 2) == 1) // Odd GhostModeIndex is Chase mode.
 			{
 				switch (Ghost->Color)
 				{
 				case EGhostColor::Red:
-					TargetLocation = Pacman->GetActorLocation();
+					TargetLocation = Self.Pacman->GetActorLocation();
 					break;
 				case EGhostColor::Pink:
-					TargetLocation = Pacman->GetActorLocation() + 4 * GMapTileSize * Pacman->CurrentDirection;
+					TargetLocation = Self.Pacman->GetActorLocation() + 4 * GMapTileSize * Self.Pacman->CurrentDirection;
 					break;
 				case EGhostColor::Blue:
 					{
-						const FVector RedGhostLocation = Ghosts[(int32)EGhostColor::Red]->GetActorLocation();
-						TargetLocation = RedGhostLocation + 2.0f * ((Pacman->GetActorLocation() + 2.0f * GMapTileSize * Pacman->CurrentDirection) - RedGhostLocation);
+						const FVector RedGhostLocation = Self.Ghosts[(int32)EGhostColor::Red]->GetActorLocation();
+						TargetLocation = RedGhostLocation + 2.0f * ((Self.Pacman->GetActorLocation() + 2.0f * GMapTileSize * Self.Pacman->CurrentDirection) - RedGhostLocation);
 						break;
 					}
 				case EGhostColor::Orange:
 					{
-						const float Distance = FVector::Distance(Pacman->GetActorLocation(), GhostLocation);
+						const float Distance = FVector::Distance(Self.Pacman->GetActorLocation(), GhostLocation);
 						if (Distance >= 8.0f * GMapTileSize)
 						{
-							TargetLocation = Pacman->GetActorLocation();
+							TargetLocation = Self.Pacman->GetActorLocation();
 						}
 						else
 						{
@@ -200,7 +199,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			}
 
 			int32 SelectedDirection = -1;
-			if (FrightenedModeTimer == 0.0f)
+			if (Self.FrightenedModeTimer == 0.0f)
 			{
 				float MinDistance = 100000.0f;
 				for (uint32 Idx = 0; Idx < 3; ++Idx)
@@ -250,7 +249,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 		}
 	}
 
-	for (AGhostPawn* Ghost : Ghosts)
+	for (AGhostPawn* Ghost : Self.Ghosts)
 	{
 		if (Ghost->FrozenModeTimer > 0.0f)
 		{
@@ -272,7 +271,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			}
 		}
 
-		const float GhostSpeed = Ghost->Speed * ((FrightenedModeTimer > 0.0f && Ghost->bIsFrightened) ? 0.5f : 1.0f);
+		const float GhostSpeed = Ghost->Speed * ((Self.FrightenedModeTimer > 0.0f && Ghost->bIsFrightened) ? 0.5f : 1.0f);
 		const FVector Delta = Ghost->CurrentDirection * GhostSpeed * DeltaTime;
 
 		FHitResult Hit;
@@ -287,14 +286,14 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 
 void APacmanGameModeBase::PauseGame()
 {
-	check(PauseMenuWidgetClass);
+	check(Self.PauseMenuWidgetClass);
 
-	if (PauseMenuWidget == nullptr)
+	if (Self.PauseMenuWidget == nullptr)
 	{
-		PauseMenuWidget = CreateWidget(GetWorld(), PauseMenuWidgetClass);
+		Self.PauseMenuWidget = CreateWidget(GetWorld(), Self.PauseMenuWidgetClass);
 	}
 
-	PauseMenuWidget->AddToViewport();
+	Self.PauseMenuWidget->AddToViewport();
 
 	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	PC->SetInputMode(FInputModeUIOnly());
@@ -304,10 +303,10 @@ void APacmanGameModeBase::PauseGame()
 
 void APacmanGameModeBase::ResumeGame()
 {
-	check(PauseMenuWidgetClass);
-	check(PauseMenuWidget);
+	check(Self.PauseMenuWidgetClass);
+	check(Self.PauseMenuWidget);
 
-	PauseMenuWidget->RemoveFromViewport();
+	Self.PauseMenuWidget->RemoveFromViewport();
 
 	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	PC->SetInputMode(FInputModeGameOnly());
@@ -339,41 +338,41 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 
 	if (Cast<APacmanPawn>(PacmanOrGhost)) // Pacman - Ghost overlap.
 	{
-		if (FrightenedModeTimer > 0.0f && InGhost->bIsFrightened)
+		if (Self.FrightenedModeTimer > 0.0f && InGhost->bIsFrightened)
 		{
 			InGhost->TeleportToHouse();
 			InGhost->FrozenModeTimer = 5.0f;
-			Pacman->Score += 100;
+			Self.Pacman->Score += 100;
 			return;
 		}
 
-		if (Pacman->Kill() == 0)
+		if (Self.Pacman->Kill() == 0)
 		{
-			GenericInfoWidget->Text->SetText(LOCTEXT("GameOver", "Game Over"));
-			GenericInfoWidget->AddToViewport();
+			Self.GenericInfoWidget->Text->SetText(LOCTEXT("GameOver", "Game Over"));
+			Self.GenericInfoWidget->AddToViewport();
 
-			bShowInfoWidget = true;
+			Self.bShowInfoWidget = true;
 
-			GetWorldTimerManager().SetTimer(TimerHandle,
+			GetWorldTimerManager().SetTimer(Self.TimerHandle,
 				[this]()
 				{
-					GenericInfoWidget->RemoveFromViewport();
-					bShowInfoWidget = false;
+					Self.GenericInfoWidget->RemoveFromViewport();
+					Self.bShowInfoWidget = false;
 					ReturnToMainMenu();
 				},
 				2.0f, false);
 		}
 		else
 		{
-			for (AGhostPawn* Ghost : Ghosts)
+			for (AGhostPawn* Ghost : Self.Ghosts)
 			{
 				Ghost->TeleportToHouse();
 			}
 
-			GhostModeIndex = 0;
-			GhostModeTimer = GhostModeDurations[GhostModeIndex];
-			DirectionUpdateTimer = 0.0f;
-			FrightenedModeTimer = 0.0f;
+			Self.GhostModeIndex = 0;
+			Self.GhostModeTimer = Self.GhostModeDurations[Self.GhostModeIndex];
+			Self.DirectionUpdateTimer = 0.0f;
+			Self.FrightenedModeTimer = 0.0f;
 
 			ShowGetReadyInfoWidget();
 		}
@@ -390,16 +389,16 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 
 void APacmanGameModeBase::CompleteLevel()
 {
-	GenericInfoWidget->Text->SetText(LOCTEXT("CompleteLevel", "You win! Congratulations!"));
-	GenericInfoWidget->AddToViewport();
+	Self.GenericInfoWidget->Text->SetText(LOCTEXT("CompleteLevel", "You win! Congratulations!"));
+	Self.GenericInfoWidget->AddToViewport();
 
-	bShowInfoWidget = true;
+	Self.bShowInfoWidget = true;
 
-	GetWorldTimerManager().SetTimer(TimerHandle,
+	GetWorldTimerManager().SetTimer(Self.TimerHandle,
 		[this]()
 		{
-			GenericInfoWidget->RemoveFromViewport();
-			bShowInfoWidget = false;
+			Self.GenericInfoWidget->RemoveFromViewport();
+			Self.bShowInfoWidget = false;
 			ReturnToMainMenu();
 		},
 		2.0f, false);
@@ -407,9 +406,9 @@ void APacmanGameModeBase::CompleteLevel()
 
 void APacmanGameModeBase::BeginFrightenedMode()
 {
-	FrightenedModeTimer = GFrightenedModeDuration;
+	Self.FrightenedModeTimer = GFrightenedModeDuration;
 
-	for (AGhostPawn* Ghost : Ghosts)
+	for (AGhostPawn* Ghost : Self.Ghosts)
 	{
 		if (Ghost->bIsInHouse == false)
 		{
@@ -421,16 +420,16 @@ void APacmanGameModeBase::BeginFrightenedMode()
 
 void APacmanGameModeBase::ShowGetReadyInfoWidget()
 {
-	GenericInfoWidget->Text->SetText(LOCTEXT("Ready", "Get Ready!"));
-	GenericInfoWidget->AddToViewport();
+	Self.GenericInfoWidget->Text->SetText(LOCTEXT("Ready", "Get Ready!"));
+	Self.GenericInfoWidget->AddToViewport();
 
-	bShowInfoWidget = true;
+	Self.bShowInfoWidget = true;
 
-	GetWorldTimerManager().SetTimer(TimerHandle,
+	GetWorldTimerManager().SetTimer(Self.TimerHandle,
 		[this]()
 		{
-			GenericInfoWidget->RemoveFromViewport();
-			bShowInfoWidget = false;
+			Self.GenericInfoWidget->RemoveFromViewport();
+			Self.bShowInfoWidget = false;
 		},
 		2.0f, false);
 }
