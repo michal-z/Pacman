@@ -156,23 +156,25 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 				case EGhostColor::Pink:
 					TargetLocation = Pacman->GetActorLocation() + 4 * GMapTileSize * Pacman->CurrentDirection;
 					break;
-				case EGhostColor::Blue: {
-					const FVector RedGhostLocation = Ghosts[(int32)EGhostColor::Red]->GetActorLocation();
-					TargetLocation = RedGhostLocation + 2.0f * ((Pacman->GetActorLocation() + 2.0f * GMapTileSize * Pacman->CurrentDirection) - RedGhostLocation);
-					break;
-				}
-				case EGhostColor::Orange: {
-					const float Distance = FVector::Distance(Pacman->GetActorLocation(), GhostLocation);
-					if (Distance >= 8.0f * GMapTileSize)
+				case EGhostColor::Blue:
 					{
-						TargetLocation = Pacman->GetActorLocation();
+						const FVector RedGhostLocation = Ghosts[(int32)EGhostColor::Red]->GetActorLocation();
+						TargetLocation = RedGhostLocation + 2.0f * ((Pacman->GetActorLocation() + 2.0f * GMapTileSize * Pacman->CurrentDirection) - RedGhostLocation);
+						break;
 					}
-					else
+				case EGhostColor::Orange:
 					{
-						TargetLocation = Ghost->ScatterTargetLocation;
+						const float Distance = FVector::Distance(Pacman->GetActorLocation(), GhostLocation);
+						if (Distance >= 8.0f * GMapTileSize)
+						{
+							TargetLocation = Pacman->GetActorLocation();
+						}
+						else
+						{
+							TargetLocation = Ghost->ScatterTargetLocation;
+						}
+						break;
 					}
-					break;
-				}
 				}
 			}
 			else // Even GhostModeIndex is Scatter mode.
@@ -352,12 +354,14 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 
 			bShowInfoWidget = true;
 
-			GetWorldTimerManager().SetTimer(TimerHandle, [this]()
-			{
-				GenericInfoWidget->RemoveFromViewport();
-				bShowInfoWidget = false;
-				ReturnToMainMenu();
-			}, 2.0f, false);
+			GetWorldTimerManager().SetTimer(TimerHandle,
+				[this]()
+				{
+					GenericInfoWidget->RemoveFromViewport();
+					bShowInfoWidget = false;
+					ReturnToMainMenu();
+				},
+				2.0f, false);
 		}
 		else
 		{
@@ -391,12 +395,14 @@ void APacmanGameModeBase::CompleteLevel()
 
 	bShowInfoWidget = true;
 
-	GetWorldTimerManager().SetTimer(TimerHandle, [this]()
-	{
-		GenericInfoWidget->RemoveFromViewport();
-		bShowInfoWidget = false;
-		ReturnToMainMenu();
-	}, 2.0f, false);
+	GetWorldTimerManager().SetTimer(TimerHandle,
+		[this]()
+		{
+			GenericInfoWidget->RemoveFromViewport();
+			bShowInfoWidget = false;
+			ReturnToMainMenu();
+		},
+		2.0f, false);
 }
 
 void APacmanGameModeBase::BeginFrightenedMode()
@@ -420,11 +426,13 @@ void APacmanGameModeBase::ShowGetReadyInfoWidget()
 
 	bShowInfoWidget = true;
 
-	GetWorldTimerManager().SetTimer(TimerHandle, [this]()
-	{
-		GenericInfoWidget->RemoveFromViewport();
-		bShowInfoWidget = false;
-	}, 2.0f, false);
+	GetWorldTimerManager().SetTimer(TimerHandle,
+		[this]()
+		{
+			GenericInfoWidget->RemoveFromViewport();
+			bShowInfoWidget = false;
+		},
+		2.0f, false);
 }
 
 #undef LOCTEXT_NAMESPACE
