@@ -352,7 +352,8 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 
 			bShowInfoWidget = true;
 
-			GetWorldTimerManager().SetTimer(TimerHandle, [this](){
+			GetWorldTimerManager().SetTimer(TimerHandle, [this]()
+			{
 				GenericInfoWidget->RemoveFromViewport();
 				bShowInfoWidget = false;
 				ReturnToMainMenu();
@@ -390,7 +391,8 @@ void APacmanGameModeBase::CompleteLevel()
 
 	bShowInfoWidget = true;
 
-	GetWorldTimerManager().SetTimer(TimerHandle, [this](){
+	GetWorldTimerManager().SetTimer(TimerHandle, [this]()
+	{
 		GenericInfoWidget->RemoveFromViewport();
 		bShowInfoWidget = false;
 		ReturnToMainMenu();
@@ -418,7 +420,8 @@ void APacmanGameModeBase::ShowGetReadyInfoWidget()
 
 	bShowInfoWidget = true;
 
-	GetWorldTimerManager().SetTimer(TimerHandle, [this](){
+	GetWorldTimerManager().SetTimer(TimerHandle, [this]()
+	{
 		GenericInfoWidget->RemoveFromViewport();
 		bShowInfoWidget = false;
 	}, 2.0f, false);
