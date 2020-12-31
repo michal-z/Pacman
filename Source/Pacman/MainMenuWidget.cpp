@@ -7,8 +7,8 @@ void UMainMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	Self.NewGameButton->OnClicked.AddUniqueDynamic(this, &UMainMenuWidget::OnNewGame);
-	Self.QuitGameButton->OnClicked.AddUniqueDynamic(this, &UMainMenuWidget::OnQuitGame);
+	This.NewGameButton->OnClicked.AddUniqueDynamic(this, &UMainMenuWidget::OnNewGame);
+	This.QuitGameButton->OnClicked.AddUniqueDynamic(this, &UMainMenuWidget::OnQuitGame);
 }
 
 void UMainMenuWidget::OnNewGame()

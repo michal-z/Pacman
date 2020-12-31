@@ -7,8 +7,8 @@ void UPauseMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	Self.ResumeGameButton->OnClicked.AddUniqueDynamic(this, &UPauseMenuWidget::OnResumeGame);
-	Self.ReturnToMainMenuButton->OnClicked.AddUniqueDynamic(this, &UPauseMenuWidget::OnReturnToMainMenu);
+	This.ResumeGameButton->OnClicked.AddUniqueDynamic(this, &UPauseMenuWidget::OnResumeGame);
+	This.ReturnToMainMenuButton->OnClicked.AddUniqueDynamic(this, &UPauseMenuWidget::OnReturnToMainMenu);
 }
 
 void UPauseMenuWidget::OnResumeGame()

@@ -9,50 +9,50 @@ PRAGMA_DISABLE_OPTIMIZATION
 
 AGhostPawn::AGhostPawn()
 {
-	Self.PrimaryActorTick.bCanEverTick = false;
+	This.PrimaryActorTick.bCanEverTick = false;
 
-	Self.CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
-	Self.CollisionComponent->InitSphereRadius(49.0f);
-	Self.CollisionComponent->SetCollisionObjectType(ECC_WorldDynamic);
-	Self.CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
-	Self.CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
-	Self.CollisionComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
-	Self.CollisionComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	Self.CollisionComponent->SetAllUseCCD(true);
+	This.CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
+	This.CollisionComponent->InitSphereRadius(49.0f);
+	This.CollisionComponent->SetCollisionObjectType(ECC_WorldDynamic);
+	This.CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	This.CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	This.CollisionComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
+	This.CollisionComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	This.CollisionComponent->SetAllUseCCD(true);
 
-	Self.VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
-	Self.VisualComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	Self.VisualComponent->SetupAttachment(Self.CollisionComponent);
+	This.VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
+	This.VisualComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	This.VisualComponent->SetupAttachment(This.CollisionComponent);
 
-	Self.RootComponent = Self.CollisionComponent;
+	This.RootComponent = This.CollisionComponent;
 
 	{
 		static ConstructorHelpers::FObjectFinder<UStaticMesh> Finder(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
-		Self.VisualComponent->SetStaticMesh(Finder.Object);
+		This.VisualComponent->SetStaticMesh(Finder.Object);
 	}
 
-	Self.MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
-	Self.MovementComponent->UpdatedComponent = Self.RootComponent;
+	This.MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
+	This.MovementComponent->UpdatedComponent = This.RootComponent;
 
-	Self.AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	This.AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
-	Self.CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
-	Self.Speed = 400.0f;
-	Self.bIsInHouse = true;
+	This.CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
+	This.Speed = 400.0f;
+	This.bIsInHouse = true;
 }
 
 void AGhostPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Self.HouseLocation = GetActorLocation();
-	Self.DefaultMaterial = Self.VisualComponent->GetMaterial(0);
-	Self.FrozenModeTimer = Self.LeaveHouseTime;
+	This.HouseLocation = GetActorLocation();
+	This.DefaultMaterial = This.VisualComponent->GetMaterial(0);
+	This.FrozenModeTimer = This.LeaveHouseTime;
 }
 
 UPawnMovementComponent* AGhostPawn::GetMovementComponent() const
 {
-	return Self.MovementComponent;
+	return This.MovementComponent;
 }
 
 void AGhostPawn::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -70,10 +70,10 @@ void AGhostPawn::TeleportToHouse()
 {
 	AGhostPawn* CDO = StaticClass()->GetDefaultObject<AGhostPawn>();
 
-	SetActorLocation(Self.HouseLocation, false, nullptr, ETeleportType::ResetPhysics);
-	Self.VisualComponent->SetMaterial(0, Self.DefaultMaterial);
-	Self.CurrentDirection = CDO->CurrentDirection;
-	Self.bIsInHouse = true;
-	Self.bIsFrightened = false;
-	Self.FrozenModeTimer = Self.LeaveHouseTime;
+	SetActorLocation(This.HouseLocation, false, nullptr, ETeleportType::ResetPhysics);
+	This.VisualComponent->SetMaterial(0, This.DefaultMaterial);
+	This.CurrentDirection = CDO->CurrentDirection;
+	This.bIsInHouse = true;
+	This.bIsFrightened = false;
+	This.FrozenModeTimer = This.LeaveHouseTime;
 }
