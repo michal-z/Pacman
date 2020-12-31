@@ -15,69 +15,69 @@ PRAGMA_DISABLE_OPTIMIZATION
 
 APacmanPawn::APacmanPawn()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	Self.PrimaryActorTick.bCanEverTick = false;
 
-	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
-	CollisionComponent->InitSphereRadius(49.0f);
-	CollisionComponent->SetCollisionObjectType(ECC_Pawn);
-	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
-	CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
-	CollisionComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
-	CollisionComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Overlap);
-	CollisionComponent->SetAllUseCCD(true);
+	Self.CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
+	Self.CollisionComponent->InitSphereRadius(49.0f);
+	Self.CollisionComponent->SetCollisionObjectType(ECC_Pawn);
+	Self.CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	Self.CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	Self.CollisionComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
+	Self.CollisionComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Overlap);
+	Self.CollisionComponent->SetAllUseCCD(true);
 
-	VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
-	VisualComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	VisualComponent->SetupAttachment(CollisionComponent);
+	Self.VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
+	Self.VisualComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Self.VisualComponent->SetupAttachment(CollisionComponent);
 
-	RootComponent = CollisionComponent;
+	Self.RootComponent = CollisionComponent;
 
 	{
 		static ConstructorHelpers::FObjectFinder<UStaticMesh> Finder(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
-		VisualComponent->SetStaticMesh(Finder.Object);
+		Self.VisualComponent->SetStaticMesh(Finder.Object);
 	}
 	{
 		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder(TEXT("/Game/Materials/M_Pacman"));
-		VisualComponent->SetMaterial(0, Finder.Object);
+		Self.VisualComponent->SetMaterial(0, Finder.Object);
 	}
 
-	MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
-	MovementComponent->UpdatedComponent = RootComponent;
+	Self.MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
+	Self.MovementComponent->UpdatedComponent = RootComponent;
 
 	{
 		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_HUD"));
-		HUDWidgetClass = Finder.Class;
+		Self.HUDWidgetClass = Finder.Class;
 	}
 	{
 		static ConstructorHelpers::FClassFinder<APacmanFood> Finder(TEXT("/Game/Blueprints/BP_SuperFood"));
-		SuperFoodClass = Finder.Class;
+		Self.SuperFoodClass = Finder.Class;
 	}
 
-	AutoPossessPlayer = EAutoReceiveInput::Player0;
+	Self.AutoPossessPlayer = EAutoReceiveInput::Player0;
 
-	CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
-	WantedDirection = CurrentDirection;
-	NumLives = 3;
+	Self.CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
+	Self.WantedDirection = CurrentDirection;
+	Self.NumLives = 3;
 }
 
 void APacmanPawn::MoveUp()
 {
-	WantedDirection = FVector(0.0f, -1.0f, 0.0f);
+	Self.WantedDirection = FVector(0.0f, -1.0f, 0.0f);
 }
 
 void APacmanPawn::MoveDown()
 {
-	WantedDirection = FVector(0.0f, 1.0f, 0.0f);
+	Self.WantedDirection = FVector(0.0f, 1.0f, 0.0f);
 }
 
 void APacmanPawn::MoveRight()
 {
-	WantedDirection = FVector(1.0f, 0.0f, 0.0f);
+	Self.WantedDirection = FVector(1.0f, 0.0f, 0.0f);
 }
 
 void APacmanPawn::MoveLeft()
 {
-	WantedDirection = FVector(-1.0f, 0.0f, 0.0f);
+	Self.WantedDirection = FVector(-1.0f, 0.0f, 0.0f);
 }
 
 void APacmanPawn::BeginPlay()
@@ -86,18 +86,18 @@ void APacmanPawn::BeginPlay()
 
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != TEXT("Main"))
 	{
-		InitialLocation = GetActorLocation();
+		Self.InitialLocation = GetActorLocation();
 
-		check(HUDWidgetClass);
-		HUDWidget = CastChecked<UPacmanHUDWidget>(CreateWidget(GetWorld(), HUDWidgetClass));
-		HUDWidget->AddToViewport();
+		check(Self.HUDWidgetClass);
+		Self.HUDWidget = CastChecked<UPacmanHUDWidget>(CreateWidget(GetWorld(), HUDWidgetClass));
+		Self.HUDWidget->AddToViewport();
 
-		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
-		HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), NumLives));
+		Self.HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
+		Self.HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), NumLives));
 
 		TArray<AActor*> FoodActors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), APacmanFood::StaticClass(), FoodActors);
-		NumFoodLeft = FoodActors.Num();
+		Self.NumFoodLeft = FoodActors.Num();
 	}
 }
 
@@ -116,7 +116,7 @@ void APacmanPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 UPawnMovementComponent* APacmanPawn::GetMovementComponent() const
 {
-	return MovementComponent;
+	return Self.MovementComponent;
 }
 
 void APacmanPawn::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -126,16 +126,16 @@ void APacmanPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 	APacmanFood* Food = Cast<APacmanFood>(OtherActor);
 	if (Food)
 	{
-		Score += Food->Score;
-		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
+		Self.Score += Food->Score;
+		Self.HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
 		Food->Destroy();
 
-		if (--NumFoodLeft == 0)
+		if (--Self.NumFoodLeft == 0)
 		{
 			APacmanGameModeBase* GameMode = CastChecked<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 			GameMode->CompleteLevel();
 		}
-		else if (Food->IsA(SuperFoodClass))
+		else if (Food->IsA(Self.SuperFoodClass))
 		{
 			APacmanGameModeBase* GameMode = CastChecked<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 			GameMode->BeginFrightenedMode();
@@ -145,22 +145,22 @@ void APacmanPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 
 uint32 APacmanPawn::Kill()
 {
-	check(NumLives > 0);
+	check(Self.NumLives > 0);
 
-	NumLives -= 1;
+	Self.NumLives -= 1;
 
-	HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), NumLives));
+	Self.HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), Self.NumLives));
 
-	if (NumLives > 0)
+	if (Self.NumLives > 0)
 	{
-		SetActorLocation(InitialLocation, false, nullptr, ETeleportType::ResetPhysics);
+		SetActorLocation(Self.InitialLocation, false, nullptr, ETeleportType::ResetPhysics);
 
 		APacmanPawn* CDO = StaticClass()->GetDefaultObject<APacmanPawn>();
-		CurrentDirection = CDO->CurrentDirection;
-		WantedDirection = CDO->WantedDirection;
+		Self.CurrentDirection = CDO->CurrentDirection;
+		Self.WantedDirection = CDO->WantedDirection;
 	}
 
-	return NumLives;
+	return Self.NumLives;
 }
 
 void APacmanPawn::Move(float DeltaTime)
@@ -171,22 +171,22 @@ void APacmanPawn::Move(float DeltaTime)
 		return;
 	}
 
-	const float Radius = CollisionComponent->GetScaledSphereRadius();
+	const float Radius = Self.CollisionComponent->GetScaledSphereRadius();
 	const bool bIsBlocked = World->SweepTestByChannel(GetActorLocation(), GetActorLocation() + WantedDirection * Radius * 0.5f, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
 
 	if (!bIsBlocked)
 	{
-		CurrentDirection = WantedDirection;
+		Self.CurrentDirection = Self.WantedDirection;
 	}
 
-	const FVector Delta = CurrentDirection * DeltaTime * 400.0f;
+	const FVector Delta = Self.CurrentDirection * DeltaTime * 400.0f;
 
 	FHitResult Hit;
-	MovementComponent->SafeMoveUpdatedComponent(Delta, FQuat::Identity, true, Hit);
+	Self.MovementComponent->SafeMoveUpdatedComponent(Delta, FQuat::Identity, true, Hit);
 
 	if (Hit.IsValidBlockingHit())
 	{
-		MovementComponent->SlideAlongSurface(Delta, 1.0f - Hit.Time, Hit.Normal, Hit);
+		Self.MovementComponent->SlideAlongSurface(Delta, 1.0f - Hit.Time, Hit.Normal, Hit);
 	}
 }
 

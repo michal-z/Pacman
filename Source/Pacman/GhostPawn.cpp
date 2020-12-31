@@ -9,50 +9,50 @@ PRAGMA_DISABLE_OPTIMIZATION
 
 AGhostPawn::AGhostPawn()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	Self.PrimaryActorTick.bCanEverTick = false;
 
-	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
-	CollisionComponent->InitSphereRadius(49.0f);
-	CollisionComponent->SetCollisionObjectType(ECC_WorldDynamic);
-	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
-	CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
-	CollisionComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
-	CollisionComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	CollisionComponent->SetAllUseCCD(true);
+	Self.CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
+	Self.CollisionComponent->InitSphereRadius(49.0f);
+	Self.CollisionComponent->SetCollisionObjectType(ECC_WorldDynamic);
+	Self.CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	Self.CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	Self.CollisionComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
+	Self.CollisionComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	Self.CollisionComponent->SetAllUseCCD(true);
 
-	VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
-	VisualComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	VisualComponent->SetupAttachment(CollisionComponent);
+	Self.VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
+	Self.VisualComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Self.VisualComponent->SetupAttachment(CollisionComponent);
 
-	RootComponent = CollisionComponent;
+	Self.RootComponent = CollisionComponent;
 
 	{
 		static ConstructorHelpers::FObjectFinder<UStaticMesh> Finder(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
-		VisualComponent->SetStaticMesh(Finder.Object);
+		Self.VisualComponent->SetStaticMesh(Finder.Object);
 	}
 
-	MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
-	MovementComponent->UpdatedComponent = RootComponent;
+	Self.MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
+	Self.MovementComponent->UpdatedComponent = RootComponent;
 
-	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	Self.AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
-	CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
-	Speed = 400.0f;
-	bIsInHouse = true;
+	Self.CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
+	Self.Speed = 400.0f;
+	Self.bIsInHouse = true;
 }
 
 void AGhostPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	HouseLocation = GetActorLocation();
-	DefaultMaterial = VisualComponent->GetMaterial(0);
-	FrozenModeTimer = LeaveHouseTime;
+	Self.HouseLocation = GetActorLocation();
+	Self.DefaultMaterial = VisualComponent->GetMaterial(0);
+	Self.FrozenModeTimer = LeaveHouseTime;
 }
 
 UPawnMovementComponent* AGhostPawn::GetMovementComponent() const
 {
-	return MovementComponent;
+	return Self.MovementComponent;
 }
 
 void AGhostPawn::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -70,10 +70,10 @@ void AGhostPawn::TeleportToHouse()
 {
 	AGhostPawn* CDO = StaticClass()->GetDefaultObject<AGhostPawn>();
 
-	SetActorLocation(HouseLocation, false, nullptr, ETeleportType::ResetPhysics);
-	VisualComponent->SetMaterial(0, DefaultMaterial);
-	CurrentDirection = CDO->CurrentDirection;
-	bIsInHouse = true;
-	bIsFrightened = false;
-	FrozenModeTimer = LeaveHouseTime;
+	SetActorLocation(Self.HouseLocation, false, nullptr, ETeleportType::ResetPhysics);
+	Self.VisualComponent->SetMaterial(0, Self.DefaultMaterial);
+	Self.CurrentDirection = CDO->CurrentDirection;
+	Self.bIsInHouse = true;
+	Self.bIsFrightened = false;
+	Self.FrozenModeTimer = Self.LeaveHouseTime;
 }

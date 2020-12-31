@@ -2,15 +2,15 @@
 
 APacmanFood::APacmanFood()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	Self.PrimaryActorTick.bCanEverTick = false;
 
-	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
-	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	MeshComponent->SetCollisionObjectType(ECC_GameTraceChannel1);
-	MeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
-	MeshComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	Self.MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
+	Self.MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	Self.MeshComponent->SetCollisionObjectType(ECC_GameTraceChannel1);
+	Self.MeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	Self.MeshComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
-	RootComponent = MeshComponent;
+	Self.RootComponent = MeshComponent;
 
-	Score = 1;
+	Self.Score = 1;
 }
