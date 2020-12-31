@@ -46,8 +46,8 @@ void AGhostPawn::BeginPlay()
 	Super::BeginPlay();
 
 	Self.HouseLocation = GetActorLocation();
-	Self.DefaultMaterial = VisualComponent->GetMaterial(0);
-	Self.FrozenModeTimer = LeaveHouseTime;
+	Self.DefaultMaterial = Self.VisualComponent->GetMaterial(0);
+	Self.FrozenModeTimer = Self.LeaveHouseTime;
 }
 
 UPawnMovementComponent* AGhostPawn::GetMovementComponent() const
