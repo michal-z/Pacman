@@ -22,9 +22,9 @@ AGhostPawn::AGhostPawn()
 
 	Self.VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
 	Self.VisualComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	Self.VisualComponent->SetupAttachment(CollisionComponent);
+	Self.VisualComponent->SetupAttachment(Self.CollisionComponent);
 
-	Self.RootComponent = CollisionComponent;
+	Self.RootComponent = Self.CollisionComponent;
 
 	{
 		static ConstructorHelpers::FObjectFinder<UStaticMesh> Finder(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
@@ -32,7 +32,7 @@ AGhostPawn::AGhostPawn()
 	}
 
 	Self.MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
-	Self.MovementComponent->UpdatedComponent = RootComponent;
+	Self.MovementComponent->UpdatedComponent = Self.RootComponent;
 
 	Self.AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 

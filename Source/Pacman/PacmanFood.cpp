@@ -10,7 +10,7 @@ APacmanFood::APacmanFood()
 	Self.MeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 	Self.MeshComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
-	Self.RootComponent = MeshComponent;
+	Self.RootComponent = Self.MeshComponent;
 
 	Self.Score = 1;
 }

@@ -28,9 +28,9 @@ APacmanPawn::APacmanPawn()
 
 	Self.VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
 	Self.VisualComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	Self.VisualComponent->SetupAttachment(CollisionComponent);
+	Self.VisualComponent->SetupAttachment(Self.CollisionComponent);
 
-	Self.RootComponent = CollisionComponent;
+	Self.RootComponent = Self.CollisionComponent;
 
 	{
 		static ConstructorHelpers::FObjectFinder<UStaticMesh> Finder(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
@@ -42,7 +42,7 @@ APacmanPawn::APacmanPawn()
 	}
 
 	Self.MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
-	Self.MovementComponent->UpdatedComponent = RootComponent;
+	Self.MovementComponent->UpdatedComponent = Self.RootComponent;
 
 	{
 		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_HUD"));
@@ -56,7 +56,7 @@ APacmanPawn::APacmanPawn()
 	Self.AutoPossessPlayer = EAutoReceiveInput::Player0;
 
 	Self.CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
-	Self.WantedDirection = CurrentDirection;
+	Self.WantedDirection = Self.CurrentDirection;
 	Self.NumLives = 3;
 }
 
