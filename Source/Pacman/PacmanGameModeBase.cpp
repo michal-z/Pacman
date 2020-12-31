@@ -145,35 +145,36 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			{
 				TargetLocation = This.Pacman->GetActorLocation();
 			}
-			else if ((This.GhostModeIndex % 2) == 1) // Odd GhostModeIndex is Chase mode.
+			else if ((This.GhostModeIndex & 0x1) == 1) // Odd GhostModeIndex is Chase mode.
 			{
-				switch (Ghost->Color)
+				if (Ghost->Color == EGhostColor::Red)
 				{
-				case EGhostColor::Red:
 					TargetLocation = This.Pacman->GetActorLocation();
-					break;
-				case EGhostColor::Pink:
+				}
+				else if (Ghost->Color == EGhostColor::Pink)
+				{
 					TargetLocation = This.Pacman->GetActorLocation() + 4 * GMapTileSize * This.Pacman->CurrentDirection;
-					break;
-				case EGhostColor::Blue:
+				}
+				else if (Ghost->Color == EGhostColor::Blue)
+				{
+					const FVector RedGhostLocation = This.Ghosts[(int32)EGhostColor::Red]->GetActorLocation();
+					TargetLocation = RedGhostLocation + 2.0f * ((This.Pacman->GetActorLocation() + 2.0f * GMapTileSize * This.Pacman->CurrentDirection) - RedGhostLocation);
+				}
+				else if (Ghost->Color == EGhostColor::Orange)
+				{
+					const float Distance = FVector::Distance(This.Pacman->GetActorLocation(), GhostLocation);
+					if (Distance >= 8.0f * GMapTileSize)
 					{
-						const FVector RedGhostLocation = This.Ghosts[(int32)EGhostColor::Red]->GetActorLocation();
-						TargetLocation = RedGhostLocation + 2.0f * ((This.Pacman->GetActorLocation() + 2.0f * GMapTileSize * This.Pacman->CurrentDirection) - RedGhostLocation);
+						TargetLocation = This.Pacman->GetActorLocation();
 					}
-					break;
-				case EGhostColor::Orange:
+					else
 					{
-						const float Distance = FVector::Distance(This.Pacman->GetActorLocation(), GhostLocation);
-						if (Distance >= 8.0f * GMapTileSize)
-						{
-							TargetLocation = This.Pacman->GetActorLocation();
-						}
-						else
-						{
-							TargetLocation = Ghost->ScatterTargetLocation;
-						}
+						TargetLocation = Ghost->ScatterTargetLocation;
 					}
-					break;
+				}
+				else
+				{
+					check(false);
 				}
 			}
 			else // Even GhostModeIndex is Scatter mode.
