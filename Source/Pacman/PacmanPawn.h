@@ -7,7 +7,8 @@ class UPacmanHUDWidget;
 class USphereComponent;
 class APacmanFood;
 
-UCLASS() class PACMAN_API APacmanPawn : public APawn
+UCLASS()
+class PACMAN_API APacmanPawn : public APawn
 {
 public:
 	FVector CurrentDirection;
@@ -20,9 +21,14 @@ private:
 	TSubclassOf<APacmanFood> SuperFoodClass;
 	TSubclassOf<UUserWidget> HUDWidgetClass;
 
-	UPROPERTY() UPawnMovementComponent* MovementComponent;
-	UPROPERTY() USphereComponent* CollisionComponent;
-	UPROPERTY() UPacmanHUDWidget* HUDWidget;
+	UPROPERTY()
+	UPawnMovementComponent* MovementComponent;
+
+	UPROPERTY()
+	USphereComponent* CollisionComponent;
+
+	UPROPERTY()
+	UPacmanHUDWidget* HUDWidget;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* VisualComponent;

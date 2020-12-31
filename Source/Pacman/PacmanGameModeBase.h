@@ -6,7 +6,8 @@ class UGenericInfoWidget;
 class APacmanPawn;
 class AGhostPawn;
 
-UCLASS() class PACMAN_API APacmanGameModeBase : public AGameModeBase
+UCLASS()
+class PACMAN_API APacmanGameModeBase : public AGameModeBase
 {
 private:
 	bool bShowInfoWidget;
@@ -25,9 +26,14 @@ private:
 	TSubclassOf<UUserWidget> PauseMenuWidgetClass;
 	TSubclassOf<UUserWidget> GenericInfoWidgetClass;
 
-	UPROPERTY() UUserWidget* MainMenuWidget;
-	UPROPERTY() UUserWidget* PauseMenuWidget;
-	UPROPERTY() UGenericInfoWidget* GenericInfoWidget;
+	UPROPERTY()
+	UUserWidget* MainMenuWidget;
+
+	UPROPERTY()
+	UUserWidget* PauseMenuWidget;
+
+	UPROPERTY()
+	UGenericInfoWidget* GenericInfoWidget;
 
 public:
 	APacmanGameModeBase();

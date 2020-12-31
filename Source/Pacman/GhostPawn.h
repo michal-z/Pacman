@@ -5,7 +5,8 @@
 class USphereComponent;
 class UPawnMovementComponent;
 
-UENUM() enum class EGhostColor : uint8
+UENUM()
+enum class EGhostColor : uint8
 {
 	Red,
 	Pink,
@@ -13,7 +14,8 @@ UENUM() enum class EGhostColor : uint8
 	Orange,
 };
 
-UCLASS() class PACMAN_API AGhostPawn : public APawn
+UCLASS()
+class PACMAN_API AGhostPawn : public APawn
 {
 public:
 	FVector CurrentDirection;
@@ -40,8 +42,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Ghost")
 	FVector SpawnLocation;
 
-	UPROPERTY() USphereComponent* CollisionComponent;
-	UPROPERTY() UPawnMovementComponent* MovementComponent;
+	UPROPERTY()
+	USphereComponent* CollisionComponent;
+
+	UPROPERTY()
+	UPawnMovementComponent* MovementComponent;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* VisualComponent;

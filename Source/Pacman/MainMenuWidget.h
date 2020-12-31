@@ -15,8 +15,11 @@ class PACMAN_API UMainMenuWidget : public UUserWidget
 
 	virtual void NativeConstruct() override;
 
-	UFUNCTION() void OnNewGame();
-	UFUNCTION() void OnQuitGame();
+	UFUNCTION()
+	void OnNewGame();
+
+	UFUNCTION()
+	void OnQuitGame();
 
 	GENERATED_BODY()
 };
