@@ -12,8 +12,8 @@ PRAGMA_DISABLE_OPTIMIZATION
 
 #define LOCTEXT_NAMESPACE "PacmanGameModeBase"
 
-constexpr float GMapTileSize = 100.0f;
-constexpr float GFrightenedModeDuration = 5.0f;
+static constexpr float GMapTileSize = 100.0f;
+static constexpr float GFrightenedModeDuration = 5.0f;
 
 APacmanGameModeBase::APacmanGameModeBase()
 {
