@@ -159,8 +159,8 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 					{
 						const FVector RedGhostLocation = Self.Ghosts[(int32)EGhostColor::Red]->GetActorLocation();
 						TargetLocation = RedGhostLocation + 2.0f * ((Self.Pacman->GetActorLocation() + 2.0f * GMapTileSize * Self.Pacman->CurrentDirection) - RedGhostLocation);
-						break;
 					}
+					break;
 				case EGhostColor::Orange:
 					{
 						const float Distance = FVector::Distance(Self.Pacman->GetActorLocation(), GhostLocation);
@@ -172,8 +172,8 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 						{
 							TargetLocation = Ghost->ScatterTargetLocation;
 						}
-						break;
 					}
+					break;
 				}
 			}
 			else // Even GhostModeIndex is Scatter mode.
@@ -242,7 +242,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("PacmanGameModeBase: All paths blocked!"));
 				WantedDirection = GhostDirection;
-				DirectionUpdateTimer = 1.0f;
+				Self.DirectionUpdateTimer = 1.0f;
 			}
 
 			Ghost->CurrentDirection = WantedDirection;
@@ -413,7 +413,7 @@ void APacmanGameModeBase::BeginFrightenedMode()
 		if (Ghost->bIsInHouse == false)
 		{
 			Ghost->bIsFrightened = true;
-			Ghost->VisualComponent->SetMaterial(0, GhostFrightenedModeMaterial);
+			Ghost->VisualComponent->SetMaterial(0, Self.GhostFrightenedModeMaterial);
 		}
 	}
 }

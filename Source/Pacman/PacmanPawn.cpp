@@ -89,11 +89,11 @@ void APacmanPawn::BeginPlay()
 		Self.InitialLocation = GetActorLocation();
 
 		check(Self.HUDWidgetClass);
-		Self.HUDWidget = CastChecked<UPacmanHUDWidget>(CreateWidget(GetWorld(), HUDWidgetClass));
+		Self.HUDWidget = CastChecked<UPacmanHUDWidget>(CreateWidget(GetWorld(), Self.HUDWidgetClass));
 		Self.HUDWidget->AddToViewport();
 
-		Self.HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
-		Self.HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), NumLives));
+		Self.HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Self.Score));
+		Self.HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), Self.NumLives));
 
 		TArray<AActor*> FoodActors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), APacmanFood::StaticClass(), FoodActors);
@@ -127,7 +127,7 @@ void APacmanPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 	if (Food)
 	{
 		Self.Score += Food->Score;
-		Self.HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
+		Self.HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Self.Score));
 		Food->Destroy();
 
 		if (--Self.NumFoodLeft == 0)
@@ -172,7 +172,7 @@ void APacmanPawn::Move(float DeltaTime)
 	}
 
 	const float Radius = Self.CollisionComponent->GetScaledSphereRadius();
-	const bool bIsBlocked = World->SweepTestByChannel(GetActorLocation(), GetActorLocation() + WantedDirection * Radius * 0.5f, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
+	const bool bIsBlocked = World->SweepTestByChannel(GetActorLocation(), GetActorLocation() + Self.WantedDirection * Radius * 0.5f, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
 
 	if (!bIsBlocked)
 	{
