@@ -9,50 +9,62 @@ PRAGMA_DISABLE_OPTIMIZATION
 
 AGhostPawn::AGhostPawn()
 {
-	This.PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = false;
 
-	This.CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
-	This.CollisionComponent->InitSphereRadius(49.0f);
-	This.CollisionComponent->SetCollisionObjectType(ECC_WorldDynamic);
-	This.CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
-	This.CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
-	This.CollisionComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
-	This.CollisionComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	This.CollisionComponent->SetAllUseCCD(true);
+	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
+	CollisionComponent->InitSphereRadius(49.0f);
+	CollisionComponent->SetCollisionObjectType(ECC_WorldDynamic);
+	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	CollisionComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
+	CollisionComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	CollisionComponent->SetAllUseCCD(true);
 
-	This.VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
-	This.VisualComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	This.VisualComponent->SetupAttachment(This.CollisionComponent);
+	VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
+	VisualComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	VisualComponent->SetupAttachment(CollisionComponent);
 
-	This.RootComponent = This.CollisionComponent;
+	RootComponent = CollisionComponent;
 
 	{
 		static ConstructorHelpers::FObjectFinder<UStaticMesh> Finder(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
-		This.VisualComponent->SetStaticMesh(Finder.Object);
+		VisualComponent->SetStaticMesh(Finder.Object);
 	}
 
-	This.MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
-	This.MovementComponent->UpdatedComponent = This.RootComponent;
+	MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
+	MovementComponent->UpdatedComponent = RootComponent;
 
-	This.AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
-	This.CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
-	This.Speed = 400.0f;
-	This.bIsInHouse = true;
+	CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
+	Speed = 400.0f;
+	bIsInHouse = true;
 }
 
 void AGhostPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	This.HouseLocation = GetActorLocation();
-	This.DefaultMaterial = This.VisualComponent->GetMaterial(0);
-	This.FrozenModeTimer = This.LeaveHouseTime;
+	HouseLocation = GetActorLocation();
+	DefaultMaterial = VisualComponent->GetMaterial(0);
+	{
+		APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameMode)
+		{
+			FLinearColor BaseColor(0.0f, 0.0f, 0.0f);
+			FMaterialParameterInfo BaseColorInfo(TEXT("Base_Color"));
+			DefaultMaterial->GetVectorParameterValue(BaseColorInfo, BaseColor);
+
+			TeleportMaterial = UMaterialInstanceDynamic::Create(GameMode->TeleportBaseMaterial, this);
+			TeleportMaterial->SetVectorParameterValue(TEXT("BaseColor"), BaseColor);
+		}
+	}
+	FrozenModeTimer = LeaveHouseTime;
 }
 
 UPawnMovementComponent* AGhostPawn::GetMovementComponent() const
 {
-	return This.MovementComponent;
+	return MovementComponent;
 }
 
 void AGhostPawn::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -70,10 +82,10 @@ void AGhostPawn::TeleportToHouse()
 {
 	AGhostPawn* CDO = StaticClass()->GetDefaultObject<AGhostPawn>();
 
-	SetActorLocation(This.HouseLocation, false, nullptr, ETeleportType::ResetPhysics);
-	This.VisualComponent->SetMaterial(0, This.DefaultMaterial);
-	This.CurrentDirection = CDO->CurrentDirection;
-	This.bIsInHouse = true;
-	This.bIsFrightened = false;
-	This.FrozenModeTimer = This.LeaveHouseTime;
+	SetActorLocation(HouseLocation, false, nullptr, ETeleportType::ResetPhysics);
+	VisualComponent->SetMaterial(0, DefaultMaterial);
+	CurrentDirection = CDO->CurrentDirection;
+	bIsInHouse = true;
+	bIsFrightened = false;
+	FrozenModeTimer = LeaveHouseTime;
 }

@@ -9,6 +9,8 @@ class AGhostPawn;
 UCLASS()
 class PACMAN_API APacmanGameModeBase : public AGameModeBase
 {
+public:
+	UMaterial* TeleportBaseMaterial;
 private:
 	bool bShowInfoWidget;
 	uint32 GameLevel;
@@ -26,14 +28,9 @@ private:
 	TSubclassOf<UUserWidget> PauseMenuWidgetClass;
 	TSubclassOf<UUserWidget> GenericInfoWidgetClass;
 
-	UPROPERTY()
-	UUserWidget* MainMenuWidget;
-
-	UPROPERTY()
-	UUserWidget* PauseMenuWidget;
-
-	UPROPERTY()
-	UGenericInfoWidget* GenericInfoWidget;
+	UPROPERTY() UUserWidget* MainMenuWidget;
+	UPROPERTY() UUserWidget* PauseMenuWidget;
+	UPROPERTY() UGenericInfoWidget* GenericInfoWidget;
 
 public:
 	APacmanGameModeBase();

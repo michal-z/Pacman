@@ -27,6 +27,8 @@ private:
 	FVector HouseLocation;
 
 public:
+	UPROPERTY() UMaterialInstanceDynamic* TeleportMaterial;
+
 	UPROPERTY(EditAnywhere, Category = "Ghost")
 	float Speed;
 
@@ -42,11 +44,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Ghost")
 	FVector SpawnLocation;
 
-	UPROPERTY()
-	USphereComponent* CollisionComponent;
-
-	UPROPERTY()
-	UPawnMovementComponent* MovementComponent;
+	UPROPERTY() USphereComponent* CollisionComponent;
+	UPROPERTY() UPawnMovementComponent* MovementComponent;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* VisualComponent;

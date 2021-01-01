@@ -21,14 +21,9 @@ private:
 	TSubclassOf<APacmanFood> SuperFoodClass;
 	TSubclassOf<UUserWidget> HUDWidgetClass;
 
-	UPROPERTY()
-	UPawnMovementComponent* MovementComponent;
-
-	UPROPERTY()
-	USphereComponent* CollisionComponent;
-
-	UPROPERTY()
-	UPacmanHUDWidget* HUDWidget;
+	UPROPERTY() UPawnMovementComponent* MovementComponent;
+	UPROPERTY() USphereComponent* CollisionComponent;
+	UPROPERTY() UPacmanHUDWidget* HUDWidget;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* VisualComponent;

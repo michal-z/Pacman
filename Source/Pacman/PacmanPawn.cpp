@@ -15,69 +15,69 @@ PRAGMA_DISABLE_OPTIMIZATION
 
 APacmanPawn::APacmanPawn()
 {
-	This.PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = false;
 
-	This.CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
-	This.CollisionComponent->InitSphereRadius(49.0f);
-	This.CollisionComponent->SetCollisionObjectType(ECC_Pawn);
-	This.CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
-	This.CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
-	This.CollisionComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
-	This.CollisionComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Overlap);
-	This.CollisionComponent->SetAllUseCCD(true);
+	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
+	CollisionComponent->InitSphereRadius(49.0f);
+	CollisionComponent->SetCollisionObjectType(ECC_Pawn);
+	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	CollisionComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
+	CollisionComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Overlap);
+	CollisionComponent->SetAllUseCCD(true);
 
-	This.VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
-	This.VisualComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	This.VisualComponent->SetupAttachment(This.CollisionComponent);
+	VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
+	VisualComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	VisualComponent->SetupAttachment(CollisionComponent);
 
-	This.RootComponent = This.CollisionComponent;
+	RootComponent = CollisionComponent;
 
 	{
 		static ConstructorHelpers::FObjectFinder<UStaticMesh> Finder(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
-		This.VisualComponent->SetStaticMesh(Finder.Object);
+		VisualComponent->SetStaticMesh(Finder.Object);
 	}
 	{
 		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder(TEXT("/Game/Materials/M_Pacman"));
-		This.VisualComponent->SetMaterial(0, Finder.Object);
+		VisualComponent->SetMaterial(0, Finder.Object);
 	}
 
-	This.MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
-	This.MovementComponent->UpdatedComponent = This.RootComponent;
+	MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
+	MovementComponent->UpdatedComponent = RootComponent;
 
 	{
 		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_HUD"));
-		This.HUDWidgetClass = Finder.Class;
+		HUDWidgetClass = Finder.Class;
 	}
 	{
 		static ConstructorHelpers::FClassFinder<APacmanFood> Finder(TEXT("/Game/Blueprints/BP_SuperFood"));
-		This.SuperFoodClass = Finder.Class;
+		SuperFoodClass = Finder.Class;
 	}
 
-	This.AutoPossessPlayer = EAutoReceiveInput::Player0;
+	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
-	This.CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
-	This.WantedDirection = This.CurrentDirection;
-	This.NumLives = 3;
+	CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
+	WantedDirection = CurrentDirection;
+	NumLives = 3;
 }
 
 void APacmanPawn::MoveUp()
 {
-	This.WantedDirection = FVector(0.0f, -1.0f, 0.0f);
+	WantedDirection = FVector(0.0f, -1.0f, 0.0f);
 }
 
 void APacmanPawn::MoveDown()
 {
-	This.WantedDirection = FVector(0.0f, 1.0f, 0.0f);
+	WantedDirection = FVector(0.0f, 1.0f, 0.0f);
 }
 
 void APacmanPawn::MoveRight()
 {
-	This.WantedDirection = FVector(1.0f, 0.0f, 0.0f);
+	WantedDirection = FVector(1.0f, 0.0f, 0.0f);
 }
 
 void APacmanPawn::MoveLeft()
 {
-	This.WantedDirection = FVector(-1.0f, 0.0f, 0.0f);
+	WantedDirection = FVector(-1.0f, 0.0f, 0.0f);
 }
 
 void APacmanPawn::BeginPlay()
@@ -86,18 +86,18 @@ void APacmanPawn::BeginPlay()
 
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != TEXT("Main"))
 	{
-		This.InitialLocation = GetActorLocation();
+		InitialLocation = GetActorLocation();
 
-		check(This.HUDWidgetClass);
-		This.HUDWidget = CastChecked<UPacmanHUDWidget>(CreateWidget(GetWorld(), This.HUDWidgetClass));
-		This.HUDWidget->AddToViewport();
+		check(HUDWidgetClass);
+		HUDWidget = CastChecked<UPacmanHUDWidget>(CreateWidget(GetWorld(), HUDWidgetClass));
+		HUDWidget->AddToViewport();
 
-		This.HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), This.Score));
-		This.HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), This.NumLives));
+		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
+		HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), NumLives));
 
 		TArray<AActor*> FoodActors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), APacmanFood::StaticClass(), FoodActors);
-		This.NumFoodLeft = FoodActors.Num();
+		NumFoodLeft = FoodActors.Num();
 	}
 }
 
@@ -116,7 +116,7 @@ void APacmanPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 UPawnMovementComponent* APacmanPawn::GetMovementComponent() const
 {
-	return This.MovementComponent;
+	return MovementComponent;
 }
 
 void APacmanPawn::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -126,16 +126,16 @@ void APacmanPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 	APacmanFood* Food = Cast<APacmanFood>(OtherActor);
 	if (Food)
 	{
-		This.Score += Food->Score;
-		This.HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), This.Score));
+		Score += Food->Score;
+		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
 		Food->Destroy();
 
-		if (--This.NumFoodLeft == 0)
+		if (--NumFoodLeft == 0)
 		{
 			APacmanGameModeBase* GameMode = CastChecked<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 			GameMode->CompleteLevel();
 		}
-		else if (Food->IsA(This.SuperFoodClass))
+		else if (Food->IsA(SuperFoodClass))
 		{
 			APacmanGameModeBase* GameMode = CastChecked<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 			GameMode->BeginFrightenedMode();
@@ -145,22 +145,22 @@ void APacmanPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 
 uint32 APacmanPawn::Kill()
 {
-	check(This.NumLives > 0);
+	check(NumLives > 0);
 
-	This.NumLives -= 1;
+	NumLives -= 1;
 
-	This.HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), This.NumLives));
+	HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), NumLives));
 
-	if (This.NumLives > 0)
+	if (NumLives > 0)
 	{
-		SetActorLocation(This.InitialLocation, false, nullptr, ETeleportType::ResetPhysics);
+		SetActorLocation(InitialLocation, false, nullptr, ETeleportType::ResetPhysics);
 
 		APacmanPawn* CDO = StaticClass()->GetDefaultObject<APacmanPawn>();
-		This.CurrentDirection = CDO->CurrentDirection;
-		This.WantedDirection = CDO->WantedDirection;
+		CurrentDirection = CDO->CurrentDirection;
+		WantedDirection = CDO->WantedDirection;
 	}
 
-	return This.NumLives;
+	return NumLives;
 }
 
 void APacmanPawn::Move(float DeltaTime)
@@ -171,22 +171,22 @@ void APacmanPawn::Move(float DeltaTime)
 		return;
 	}
 
-	const float Radius = This.CollisionComponent->GetScaledSphereRadius();
-	const bool bIsBlocked = World->SweepTestByChannel(GetActorLocation(), GetActorLocation() + This.WantedDirection * Radius * 0.5f, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
+	const float Radius = CollisionComponent->GetScaledSphereRadius();
+	const bool bIsBlocked = World->SweepTestByChannel(GetActorLocation(), GetActorLocation() + WantedDirection * Radius * 0.5f, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
 
 	if (!bIsBlocked)
 	{
-		This.CurrentDirection = This.WantedDirection;
+		CurrentDirection = WantedDirection;
 	}
 
-	const FVector Delta = This.CurrentDirection * DeltaTime * 400.0f;
+	const FVector Delta = CurrentDirection * DeltaTime * 400.0f;
 
 	FHitResult Hit;
-	This.MovementComponent->SafeMoveUpdatedComponent(Delta, FQuat::Identity, true, Hit);
+	MovementComponent->SafeMoveUpdatedComponent(Delta, FQuat::Identity, true, Hit);
 
 	if (Hit.IsValidBlockingHit())
 	{
-		This.MovementComponent->SlideAlongSurface(Delta, 1.0f - Hit.Time, Hit.Normal, Hit);
+		MovementComponent->SlideAlongSurface(Delta, 1.0f - Hit.Time, Hit.Normal, Hit);
 	}
 }
 
