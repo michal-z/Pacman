@@ -23,26 +23,16 @@ public:
 	bool bIsInHouse;
 	bool bIsFrightened;
 	UMaterialInterface* DefaultMaterial;
+	UPROPERTY() UMaterialInstanceDynamic* TeleportMaterial;
 private:
 	FVector HouseLocation;
 
 public:
-	UPROPERTY() UMaterialInstanceDynamic* TeleportMaterial;
-
-	UPROPERTY(EditAnywhere, Category = "Ghost")
-	float Speed;
-
-	UPROPERTY(EditAnywhere, Category = "Ghost")
-	float LeaveHouseTime;
-
-	UPROPERTY(EditAnywhere, Category = "Ghost")
-	EGhostColor Color;
-
-	UPROPERTY(EditAnywhere, Category = "Ghost")
-	FVector ScatterTargetLocation;
-
-	UPROPERTY(EditAnywhere, Category = "Ghost")
-	FVector SpawnLocation;
+	UPROPERTY(EditAnywhere, Category = "Ghost") float Speed;
+	UPROPERTY(EditAnywhere, Category = "Ghost") float LeaveHouseTime;
+	UPROPERTY(EditAnywhere, Category = "Ghost") EGhostColor Color;
+	UPROPERTY(EditAnywhere, Category = "Ghost") FVector ScatterTargetLocation;
+	UPROPERTY(EditAnywhere, Category = "Ghost") FVector SpawnLocation;
 
 	UPROPERTY() USphereComponent* CollisionComponent;
 	UPROPERTY() UPawnMovementComponent* MovementComponent;

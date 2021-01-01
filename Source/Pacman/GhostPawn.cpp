@@ -52,11 +52,12 @@ void AGhostPawn::BeginPlay()
 		if (GameMode)
 		{
 			FLinearColor BaseColor(0.0f, 0.0f, 0.0f);
-			FMaterialParameterInfo BaseColorInfo(TEXT("Base_Color"));
+			FMaterialParameterInfo BaseColorInfo(TEXT("BaseColor"));
 			DefaultMaterial->GetVectorParameterValue(BaseColorInfo, BaseColor);
 
 			TeleportMaterial = UMaterialInstanceDynamic::Create(GameMode->TeleportBaseMaterial, this);
 			TeleportMaterial->SetVectorParameterValue(TEXT("BaseColor"), BaseColor);
+			TeleportMaterial->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
 		}
 	}
 	FrozenModeTimer = LeaveHouseTime;

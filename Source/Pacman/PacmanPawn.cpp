@@ -38,7 +38,9 @@ APacmanPawn::APacmanPawn()
 	}
 	{
 		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder(TEXT("/Game/Materials/M_Pacman"));
-		VisualComponent->SetMaterial(0, Finder.Object);
+		DefaultMaterial = Finder.Object;
+
+		VisualComponent->SetMaterial(0, DefaultMaterial);
 	}
 
 	MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
@@ -98,6 +100,18 @@ void APacmanPawn::BeginPlay()
 		TArray<AActor*> FoodActors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), APacmanFood::StaticClass(), FoodActors);
 		NumFoodLeft = FoodActors.Num();
+
+		APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameMode)
+		{
+			FLinearColor BaseColor(0.0f, 0.0f, 0.0f);
+			FMaterialParameterInfo BaseColorInfo(TEXT("BaseColor"));
+			DefaultMaterial->GetVectorParameterValue(BaseColorInfo, BaseColor);
+
+			TeleportMaterial = UMaterialInstanceDynamic::Create(GameMode->TeleportBaseMaterial, this);
+			TeleportMaterial->SetVectorParameterValue(TEXT("BaseColor"), BaseColor);
+			TeleportMaterial->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
+		}
 	}
 }
 

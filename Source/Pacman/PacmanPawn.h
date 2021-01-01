@@ -13,6 +13,8 @@ class PACMAN_API APacmanPawn : public APawn
 public:
 	FVector CurrentDirection;
 	uint32 Score;
+	UMaterialInterface* DefaultMaterial;
+	UPROPERTY() UMaterialInstanceDynamic* TeleportMaterial;
 private:
 	FVector WantedDirection;
 	FVector InitialLocation;
