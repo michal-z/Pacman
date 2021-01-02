@@ -80,8 +80,6 @@ void APacmanGameModeBase::BeginPlay()
 		GameLevel = 1;
 		GhostModeTimer = GhostModeDurations[GhostModeIndex];
 
-		Teleport = {};
-
 		ShowGetReadyInfoWidget();
 	}
 }
@@ -285,8 +283,8 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 				{
 					Ghost->bIsInHouse = false;
 					Ghost->bIsFrightened = false;
-					Ghost->SetActorLocation(Ghost->SpawnLocation, false, nullptr, ETeleportType::ResetPhysics);
 					Ghost->FrozenModeTimer = 1.0f;
+					Ghost->SetActorLocation(Ghost->SpawnLocation, false, nullptr, ETeleportType::ResetPhysics);
 				}
 			}
 			else
