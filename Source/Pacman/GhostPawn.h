@@ -19,31 +19,27 @@ class PACMAN_API AGhostPawn : public APawn
 {
 public:
 	FVector CurrentDirection;
+	FVector HouseLocation;
 	float FrozenModeTimer;
 	bool bIsInHouse;
 	bool bIsFrightened;
 	UMaterialInterface* DefaultMaterial;
 	UPROPERTY() UMaterialInstanceDynamic* TeleportMaterial;
-private:
-	FVector HouseLocation;
+	UPROPERTY() USphereComponent* CollisionComponent;
+	UPROPERTY() UPawnMovementComponent* MovementComponent;
 
-public:
 	UPROPERTY(EditAnywhere, Category = "Ghost") float Speed;
 	UPROPERTY(EditAnywhere, Category = "Ghost") float LeaveHouseTime;
 	UPROPERTY(EditAnywhere, Category = "Ghost") EGhostColor Color;
 	UPROPERTY(EditAnywhere, Category = "Ghost") FVector ScatterTargetLocation;
 	UPROPERTY(EditAnywhere, Category = "Ghost") FVector SpawnLocation;
 
-	UPROPERTY() USphereComponent* CollisionComponent;
-	UPROPERTY() UPawnMovementComponent* MovementComponent;
-
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* VisualComponent;
 
-public:
+
 	AGhostPawn();
-	void TeleportToHouse();
-private:
+	void SetInHouseState();
 	virtual void BeginPlay() override;
 	virtual UPawnMovementComponent* GetMovementComponent() const override;
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;

@@ -11,11 +11,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Pacman Food")
 	uint32 Score;
 
-private:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UStaticMeshComponent* MeshComponent;
 
-public:
+
 	APacmanFood();
 
 	GENERATED_BODY()

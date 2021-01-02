@@ -13,16 +13,14 @@ class PACMAN_API APacmanPawn : public APawn
 public:
 	FVector CurrentDirection;
 	uint32 Score;
+	FVector InitialLocation;
 	UMaterialInterface* DefaultMaterial;
 	UPROPERTY() UMaterialInstanceDynamic* TeleportMaterial;
-private:
 	FVector WantedDirection;
-	FVector InitialLocation;
 	uint32 NumLives;
 	uint32 NumFoodLeft;
 	TSubclassOf<APacmanFood> SuperFoodClass;
 	TSubclassOf<UUserWidget> HUDWidgetClass;
-
 	UPROPERTY() UPawnMovementComponent* MovementComponent;
 	UPROPERTY() USphereComponent* CollisionComponent;
 	UPROPERTY() UPacmanHUDWidget* HUDWidget;
@@ -30,11 +28,10 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* VisualComponent;
 
-public:
+
 	APacmanPawn();
 	uint32 Kill();
 	void Move(float DeltaTime);
-private:
 	void MoveUp();
 	void MoveDown();
 	void MoveRight();

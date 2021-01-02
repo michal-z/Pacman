@@ -11,7 +11,6 @@ class PACMAN_API APacmanGameModeBase : public AGameModeBase
 {
 public:
 	UMaterial* TeleportBaseMaterial;
-private:
 	bool bShowInfoWidget;
 	uint32 GameLevel;
 	APacmanPawn* Pacman;
@@ -27,12 +26,20 @@ private:
 	TSubclassOf<UUserWidget> MainMenuWidgetClass;
 	TSubclassOf<UUserWidget> PauseMenuWidgetClass;
 	TSubclassOf<UUserWidget> GenericInfoWidgetClass;
-
+	struct
+	{
+		UMaterialInstanceDynamic* Material;
+		float Opacity;
+		float Sign;
+		TFunction<void()> CalledWhenOpacity0;
+		TFunction<void()> CalledWhenOpacity1;
+	}
+	Teleport;
 	UPROPERTY() UUserWidget* MainMenuWidget;
 	UPROPERTY() UUserWidget* PauseMenuWidget;
 	UPROPERTY() UGenericInfoWidget* GenericInfoWidget;
 
-public:
+
 	APacmanGameModeBase();
 	void PauseGame();
 	void ResumeGame();
@@ -42,7 +49,6 @@ public:
 	void NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostPawn* InGhost);
 	void CompleteLevel();
 	void BeginFrightenedMode();
-private:
 	void MoveGhosts(float DeltaTime);
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;

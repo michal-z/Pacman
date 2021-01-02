@@ -167,8 +167,6 @@ uint32 APacmanPawn::Kill()
 
 	if (NumLives > 0)
 	{
-		SetActorLocation(InitialLocation, false, nullptr, ETeleportType::ResetPhysics);
-
 		APacmanPawn* CDO = StaticClass()->GetDefaultObject<APacmanPawn>();
 		CurrentDirection = CDO->CurrentDirection;
 		WantedDirection = CDO->WantedDirection;

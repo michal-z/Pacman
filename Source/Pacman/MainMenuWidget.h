@@ -7,6 +7,7 @@ class UButton;
 UCLASS(Abstract)
 class PACMAN_API UMainMenuWidget : public UUserWidget
 {
+public:
 	UPROPERTY(meta = (BindWidget)) UButton* NewGameButton;
 	UPROPERTY(meta = (BindWidget)) UButton* QuitGameButton;
 

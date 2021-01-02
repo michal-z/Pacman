@@ -79,7 +79,7 @@ void AGhostPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 	}
 }
 
-void AGhostPawn::TeleportToHouse()
+void AGhostPawn::SetInHouseState()
 {
 	AGhostPawn* CDO = StaticClass()->GetDefaultObject<AGhostPawn>();
 

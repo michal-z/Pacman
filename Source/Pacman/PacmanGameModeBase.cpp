@@ -80,6 +80,8 @@ void APacmanGameModeBase::BeginPlay()
 		GameLevel = 1;
 		GhostModeTimer = GhostModeDurations[GhostModeIndex];
 
+		Teleport = {};
+
 		ShowGetReadyInfoWidget();
 	}
 }
@@ -88,7 +90,24 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (GameLevel > 0 && !bShowInfoWidget)
+	if (Teleport.Material)
+	{
+		Teleport.Opacity += Teleport.Sign * DeltaTime;
+		Teleport.Material->SetScalarParameterValue(TEXT("Opacity"), FMath::Clamp(Teleport.Opacity, 0.0f, 1.0f));
+
+		if (Teleport.Opacity <= 0.0f)
+		{
+			Teleport.Opacity = 0.0f;
+			Teleport.Sign = -Teleport.Sign;
+			Teleport.CalledWhenOpacity0();
+		}
+		else if (Teleport.Opacity >= 1.0f)
+		{
+			Teleport.CalledWhenOpacity1();
+			Teleport = {};
+		}
+	}
+	else if (GameLevel > 0 && !bShowInfoWidget)
 	{
 		Pacman->Move(DeltaTime);
 		MoveGhosts(DeltaTime);
@@ -345,7 +364,7 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 	{
 		if (FrightenedModeTimer > 0.0f && InGhost->bIsFrightened)
 		{
-			InGhost->TeleportToHouse();
+			InGhost->SetInHouseState();
 			InGhost->FrozenModeTimer = 5.0f;
 			Pacman->Score += 100;
 			return;
@@ -369,17 +388,30 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 		}
 		else
 		{
-			for (AGhostPawn* Ghost : Ghosts)
+			Pacman->VisualComponent->SetMaterial(0, Pacman->TeleportMaterial);
+
+			Teleport =
 			{
-				Ghost->TeleportToHouse();
-			}
+				Pacman->TeleportMaterial, 1.0f, -1.0f,
+				[this]()
+				{
+					Pacman->SetActorLocation(Pacman->InitialLocation, false, nullptr, ETeleportType::ResetPhysics);
+					for (AGhostPawn* Ghost : Ghosts)
+					{
+						Ghost->SetInHouseState();
+					}
+				},
+				[this]()
+				{
+					Pacman->VisualComponent->SetMaterial(0, Pacman->DefaultMaterial);
+					ShowGetReadyInfoWidget();
+				}
+			};
 
 			GhostModeIndex = 0;
 			GhostModeTimer = GhostModeDurations[GhostModeIndex];
 			DirectionUpdateTimer = 0.0f;
 			FrightenedModeTimer = 0.0f;
-
-			ShowGetReadyInfoWidget();
 		}
 	}
 	else // Ghost - Ghost overlap.
