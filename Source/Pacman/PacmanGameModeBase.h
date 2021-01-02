@@ -12,7 +12,6 @@ class PACMAN_API APacmanGameModeBase : public AGameModeBase
 public:
 	UMaterial* TeleportBaseMaterial;
 	bool bShowInfoWidget;
-	uint32 GameLevel;
 	APacmanPawn* Pacman;
 	TArray<AGhostPawn*> Ghosts;
 	UMaterialInstance* GhostFrightenedModeMaterial;
@@ -22,6 +21,7 @@ public:
 	static constexpr float GhostModeDurations[] = { 7.0f, 20.0f, 5.0f, 20.0f, 3.0f };
 	float GhostModeTimer;
 	uint32 GhostModeIndex;
+	uint32 GameLevel;
 	FTimerHandle TimerHandle;
 	TSubclassOf<UUserWidget> MainMenuWidgetClass;
 	TSubclassOf<UUserWidget> PauseMenuWidgetClass;

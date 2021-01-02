@@ -6,7 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "PacmanPawn.h"
 #include "GhostPawn.h"
-#include "GenericInfoWidget.h"
+#include "PacmanWidgets.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
 
@@ -77,8 +77,8 @@ void APacmanGameModeBase::BeginPlay()
 			Ghosts.Add(CastChecked<AGhostPawn>(Actor));
 		}
 
-		GameLevel = 1;
 		GhostModeTimer = GhostModeDurations[GhostModeIndex];
+		GameLevel = 1;
 
 		ShowGetReadyInfoWidget();
 	}
@@ -468,5 +468,9 @@ void APacmanGameModeBase::ShowGetReadyInfoWidget()
 		},
 		2.0f, false);
 }
+
+
+#include "Modules/ModuleManager.h"
+IMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, Pacman, "Pacman");
 
 #undef LOCTEXT_NAMESPACE
