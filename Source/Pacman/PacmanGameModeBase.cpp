@@ -325,7 +325,7 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 {
 	if (Cast<APacmanPawn>(PacmanOrGhost)) // Pacman - Ghost overlap.
 	{
-		if (FrightenedModeTimer > 0.0f && InGhost->GetIsFrightened())
+		if (FrightenedModeTimer > 0.0f && InGhost->IsFrightened())
 		{
 			InGhost->SetInHouseState();
 			InGhost->FrozenModeTimer = 5.0f;

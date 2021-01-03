@@ -53,9 +53,10 @@ private:
 	UPROPERTY() UGenericInfoWidget* GenericInfoWidget;
 
 	void MoveGhosts(float DeltaTime);
+	void ShowGetReadyInfoWidget();
+
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-	void ShowGetReadyInfoWidget();
 
 	GENERATED_BODY()
 };

@@ -30,7 +30,7 @@ public:
 	EGhostColor GetColor() const;
 	FVector GetScatterTargetLocation() const;
 	float GetSpeed() const;
-	bool GetIsFrightened() const;
+	bool IsFrightened() const;
 
 private:
 	bool bIsInHouse;
@@ -88,7 +88,7 @@ FORCEINLINE void AGhostPawn::DisableFrightenedMode()
 	VisualComponent->SetMaterial(0, DefaultMaterial);
 }
 
-FORCEINLINE bool AGhostPawn::GetIsFrightened() const
+FORCEINLINE bool AGhostPawn::IsFrightened() const
 {
 	return bIsFrightened;
 }
