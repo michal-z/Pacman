@@ -55,9 +55,11 @@ void AGhostPawn::BeginPlay()
 			FMaterialParameterInfo BaseColorInfo(TEXT("BaseColor"));
 			DefaultMaterial->GetVectorParameterValue(BaseColorInfo, BaseColor);
 
-			TeleportMaterial = UMaterialInstanceDynamic::Create(GameMode->TeleportBaseMaterial, this);
+			TeleportMaterial = UMaterialInstanceDynamic::Create(GameMode->GetTeleportBaseMaterial(), this);
 			TeleportMaterial->SetVectorParameterValue(TEXT("BaseColor"), BaseColor);
 			TeleportMaterial->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
+
+			FrightenedModeMaterial = GameMode->GetGhostFrightenedModeMaterial();
 		}
 	}
 	FrozenModeTimer = LeaveHouseTime;
@@ -72,10 +74,13 @@ void AGhostPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 
-	APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (GameMode)
+	if (bIsInHouse == false)
 	{
-		GameMode->NotifyGhostBeginOverlap(OtherActor, this);
+		APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GameMode)
+		{
+			GameMode->NotifyGhostBeginOverlap(OtherActor, this);
+		}
 	}
 }
 
@@ -89,4 +94,43 @@ void AGhostPawn::SetInHouseState()
 	bIsInHouse = true;
 	bIsFrightened = false;
 	FrozenModeTimer = LeaveHouseTime;
+}
+
+float AGhostPawn::GetRadius() const
+{
+	return CollisionComponent->GetScaledSphereRadius();
+}
+
+void AGhostPawn::Move(float DeltaTime)
+{
+	if (FrozenModeTimer > 0.0f)
+	{
+		FrozenModeTimer -= DeltaTime;
+		if (FrozenModeTimer <= 0.0f)
+		{
+			FrozenModeTimer = 0.0f;
+			if (bIsInHouse)
+			{
+				bIsInHouse = false;
+				bIsFrightened = false;
+				FrozenModeTimer = 1.0f;
+				SetActorLocation(SpawnLocation, false, nullptr, ETeleportType::ResetPhysics);
+			}
+		}
+		else
+		{
+			return;
+		}
+	}
+
+	const float GhostSpeed = GetSpeed() * (bIsFrightened ? 0.5f : 1.0f);
+	const FVector Delta = CurrentDirection * GhostSpeed * DeltaTime;
+
+	FHitResult Hit;
+	MovementComponent->SafeMoveUpdatedComponent(Delta, FQuat::Identity, true, Hit);
+
+	if (Hit.IsValidBlockingHit())
+	{
+		MovementComponent->SlideAlongSurface(Delta, 1.0f - Hit.Time, Hit.Normal, Hit);
+	}
 }

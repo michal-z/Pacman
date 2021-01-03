@@ -11,12 +11,23 @@ UCLASS()
 class PACMAN_API APacmanPawn : public APawn
 {
 public:
-	FVector CurrentDirection;
-	uint32 Score;
-	FVector InitialLocation;
+	APacmanPawn();
+	uint32 Kill();
+	void Move(float DeltaTime);
+	void AddScore(uint32 InScore);
+	void SetDefaultMaterial();
+	void SetTeleportMaterial();
+	FVector GetInitialLocation() const;
+	FVector GetCurrentDirection() const;
+	UMaterialInstanceDynamic* GetTeleportMaterial() const;
+
+private:
 	UMaterialInterface* DefaultMaterial;
 	UPROPERTY() UMaterialInstanceDynamic* TeleportMaterial;
+	FVector InitialLocation;
+	FVector CurrentDirection;
 	FVector WantedDirection;
+	uint32 Score;
 	uint32 NumLives;
 	uint32 NumFoodLeft;
 	TSubclassOf<APacmanFood> SuperFoodClass;
@@ -28,10 +39,6 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* VisualComponent;
 
-
-	APacmanPawn();
-	uint32 Kill();
-	void Move(float DeltaTime);
 	void MoveUp();
 	void MoveDown();
 	void MoveRight();
@@ -43,3 +50,28 @@ public:
 
 	GENERATED_BODY()
 };
+
+FORCEINLINE void APacmanPawn::SetDefaultMaterial()
+{
+	VisualComponent->SetMaterial(0, DefaultMaterial);
+}
+
+FORCEINLINE void APacmanPawn::SetTeleportMaterial()
+{
+	VisualComponent->SetMaterial(0, TeleportMaterial);
+}
+
+FORCEINLINE FVector APacmanPawn::GetInitialLocation() const
+{
+	return InitialLocation;
+}
+
+FORCEINLINE FVector APacmanPawn::GetCurrentDirection() const
+{
+	return CurrentDirection;
+}
+
+FORCEINLINE UMaterialInstanceDynamic* APacmanPawn::GetTeleportMaterial() const
+{
+	return TeleportMaterial;
+}

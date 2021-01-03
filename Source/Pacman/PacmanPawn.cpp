@@ -108,7 +108,7 @@ void APacmanPawn::BeginPlay()
 			FMaterialParameterInfo BaseColorInfo(TEXT("BaseColor"));
 			DefaultMaterial->GetVectorParameterValue(BaseColorInfo, BaseColor);
 
-			TeleportMaterial = UMaterialInstanceDynamic::Create(GameMode->TeleportBaseMaterial, this);
+			TeleportMaterial = UMaterialInstanceDynamic::Create(GameMode->GetTeleportBaseMaterial(), this);
 			TeleportMaterial->SetVectorParameterValue(TEXT("BaseColor"), BaseColor);
 			TeleportMaterial->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
 		}
@@ -140,7 +140,7 @@ void APacmanPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 	APacmanFood* Food = Cast<APacmanFood>(OtherActor);
 	if (Food)
 	{
-		Score += Food->Score;
+		Score += Food->GetScore();
 		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
 		Food->Destroy();
 
@@ -200,6 +200,12 @@ void APacmanPawn::Move(float DeltaTime)
 	{
 		MovementComponent->SlideAlongSurface(Delta, 1.0f - Hit.Time, Hit.Normal, Hit);
 	}
+}
+
+void APacmanPawn::AddScore(uint32 InScore)
+{
+	Score += InScore;
+	HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -129,8 +129,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 
 			for (AGhostPawn* Ghost : Ghosts)
 			{
-				Ghost->VisualComponent->SetMaterial(0, Ghost->DefaultMaterial);
-				Ghost->bIsFrightened = false;
+				Ghost->DisableFrightenedMode();
 			}
 		}
 	}
@@ -157,7 +156,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 
 		for (AGhostPawn* Ghost : Ghosts)
 		{
-			const float Radius = Ghost->CollisionComponent->GetScaledSphereRadius();
+			const float Radius = Ghost->GetRadius();
 			const FVector GhostLocation = Ghost->GetActorLocation();
 			const FVector GhostDirection = Ghost->CurrentDirection;
 
@@ -168,20 +167,20 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			}
 			else if ((GhostModeIndex & 0x1) == 1) // Odd GhostModeIndex is Chase mode.
 			{
-				if (Ghost->Color == EGhostColor::Red)
+				if (Ghost->GetColor() == EGhostColor::Red)
 				{
 					TargetLocation = Pacman->GetActorLocation();
 				}
-				else if (Ghost->Color == EGhostColor::Pink)
+				else if (Ghost->GetColor() == EGhostColor::Pink)
 				{
-					TargetLocation = Pacman->GetActorLocation() + 4 * GMapTileSize * Pacman->CurrentDirection;
+					TargetLocation = Pacman->GetActorLocation() + 4 * GMapTileSize * Pacman->GetCurrentDirection();
 				}
-				else if (Ghost->Color == EGhostColor::Blue)
+				else if (Ghost->GetColor() == EGhostColor::Blue)
 				{
 					const FVector RedGhostLocation = Ghosts[(int32)EGhostColor::Red]->GetActorLocation();
-					TargetLocation = RedGhostLocation + 2.0f * ((Pacman->GetActorLocation() + 2.0f * GMapTileSize * Pacman->CurrentDirection) - RedGhostLocation);
+					TargetLocation = RedGhostLocation + 2.0f * ((Pacman->GetActorLocation() + 2.0f * GMapTileSize * Pacman->GetCurrentDirection()) - RedGhostLocation);
 				}
-				else if (Ghost->Color == EGhostColor::Orange)
+				else if (Ghost->GetColor() == EGhostColor::Orange)
 				{
 					const float Distance = FVector::Distance(Pacman->GetActorLocation(), GhostLocation);
 					if (Distance >= 8.0f * GMapTileSize)
@@ -190,7 +189,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 					}
 					else
 					{
-						TargetLocation = Ghost->ScatterTargetLocation;
+						TargetLocation = Ghost->GetScatterTargetLocation();
 					}
 				}
 				else
@@ -200,10 +199,10 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			}
 			else // Even GhostModeIndex is Scatter mode.
 			{
-				TargetLocation = Ghost->ScatterTargetLocation;
+				TargetLocation = Ghost->GetScatterTargetLocation();
 			}
 
-			const float Speed = DeltaTime * Ghost->Speed;
+			const float Speed = DeltaTime * Ghost->GetSpeed();
 			const FVector Destinations[3] =
 			{
 				GhostLocation + GhostDirection * Speed,
@@ -273,36 +272,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 
 	for (AGhostPawn* Ghost : Ghosts)
 	{
-		if (Ghost->FrozenModeTimer > 0.0f)
-		{
-			Ghost->FrozenModeTimer -= DeltaTime;
-			if (Ghost->FrozenModeTimer <= 0.0f)
-			{
-				Ghost->FrozenModeTimer = 0.0f;
-				if (Ghost->bIsInHouse)
-				{
-					Ghost->bIsInHouse = false;
-					Ghost->bIsFrightened = false;
-					Ghost->FrozenModeTimer = 1.0f;
-					Ghost->SetActorLocation(Ghost->SpawnLocation, false, nullptr, ETeleportType::ResetPhysics);
-				}
-			}
-			else
-			{
-				continue;
-			}
-		}
-
-		const float GhostSpeed = Ghost->Speed * ((FrightenedModeTimer > 0.0f && Ghost->bIsFrightened) ? 0.5f : 1.0f);
-		const FVector Delta = Ghost->CurrentDirection * GhostSpeed * DeltaTime;
-
-		FHitResult Hit;
-		Ghost->MovementComponent->SafeMoveUpdatedComponent(Delta, FQuat::Identity, true, Hit);
-
-		if (Hit.IsValidBlockingHit())
-		{
-			Ghost->MovementComponent->SlideAlongSurface(Delta, 1.0f - Hit.Time, Hit.Normal, Hit);
-		}
+		Ghost->Move(DeltaTime);
 	}
 }
 
@@ -353,18 +323,13 @@ void APacmanGameModeBase::QuitGame()
 
 void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostPawn* InGhost)
 {
-	if (InGhost->bIsInHouse)
-	{
-		return;
-	}
-
 	if (Cast<APacmanPawn>(PacmanOrGhost)) // Pacman - Ghost overlap.
 	{
-		if (FrightenedModeTimer > 0.0f && InGhost->bIsFrightened)
+		if (FrightenedModeTimer > 0.0f && InGhost->GetIsFrightened())
 		{
 			InGhost->SetInHouseState();
 			InGhost->FrozenModeTimer = 5.0f;
-			Pacman->Score += 100;
+			Pacman->AddScore(100);
 			return;
 		}
 
@@ -386,14 +351,14 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 		}
 		else
 		{
-			Pacman->VisualComponent->SetMaterial(0, Pacman->TeleportMaterial);
+			Pacman->SetTeleportMaterial();
 
 			Teleport =
 			{
-				Pacman->TeleportMaterial, 1.0f, -1.0f,
+				Pacman->GetTeleportMaterial(), 1.0f, -1.0f,
 				[this]()
 				{
-					Pacman->SetActorLocation(Pacman->InitialLocation, false, nullptr, ETeleportType::ResetPhysics);
+					Pacman->SetActorLocation(Pacman->GetInitialLocation(), false, nullptr, ETeleportType::ResetPhysics);
 					for (AGhostPawn* Ghost : Ghosts)
 					{
 						Ghost->SetInHouseState();
@@ -401,7 +366,7 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 				},
 				[this]()
 				{
-					Pacman->VisualComponent->SetMaterial(0, Pacman->DefaultMaterial);
+					Pacman->SetDefaultMaterial();
 					ShowGetReadyInfoWidget();
 				}
 			};
@@ -445,11 +410,7 @@ void APacmanGameModeBase::BeginFrightenedMode()
 
 	for (AGhostPawn* Ghost : Ghosts)
 	{
-		if (Ghost->bIsInHouse == false)
-		{
-			Ghost->bIsFrightened = true;
-			Ghost->VisualComponent->SetMaterial(0, GhostFrightenedModeMaterial);
-		}
+		Ghost->EnableFrightenedMode();
 	}
 }
 

@@ -19,11 +19,25 @@ class PACMAN_API AGhostPawn : public APawn
 {
 public:
 	FVector CurrentDirection;
-	FVector HouseLocation;
 	float FrozenModeTimer;
+
+	AGhostPawn();
+	void SetInHouseState();
+	void EnableFrightenedMode();
+	void DisableFrightenedMode();
+	void Move(float DeltaTime);
+	float GetRadius() const;
+	EGhostColor GetColor() const;
+	FVector GetScatterTargetLocation() const;
+	float GetSpeed() const;
+	bool GetIsFrightened() const;
+
+private:
 	bool bIsInHouse;
 	bool bIsFrightened;
+	FVector HouseLocation;
 	UMaterialInterface* DefaultMaterial;
+	UMaterialInstance* FrightenedModeMaterial;
 	UPROPERTY() UMaterialInstanceDynamic* TeleportMaterial;
 	UPROPERTY() USphereComponent* CollisionComponent;
 	UPROPERTY() UPawnMovementComponent* MovementComponent;
@@ -37,12 +51,44 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* VisualComponent;
 
-
-	AGhostPawn();
-	void SetInHouseState();
 	virtual void BeginPlay() override;
 	virtual UPawnMovementComponent* GetMovementComponent() const override;
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
 	GENERATED_BODY()
 };
+
+FORCEINLINE EGhostColor AGhostPawn::GetColor() const
+{
+	return Color;
+}
+
+FORCEINLINE FVector AGhostPawn::GetScatterTargetLocation() const
+{
+	return ScatterTargetLocation;
+}
+
+FORCEINLINE float AGhostPawn::GetSpeed() const
+{
+	return Speed;
+}
+
+FORCEINLINE void AGhostPawn::EnableFrightenedMode()
+{
+	if (bIsInHouse == false)
+	{
+		bIsFrightened = true;
+		VisualComponent->SetMaterial(0, FrightenedModeMaterial);
+	}
+}
+
+FORCEINLINE void AGhostPawn::DisableFrightenedMode()
+{
+	bIsFrightened = false;
+	VisualComponent->SetMaterial(0, DefaultMaterial);
+}
+
+FORCEINLINE bool AGhostPawn::GetIsFrightened() const
+{
+	return bIsFrightened;
+}

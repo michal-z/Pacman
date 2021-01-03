@@ -10,6 +10,19 @@ UCLASS()
 class PACMAN_API APacmanGameModeBase : public AGameModeBase
 {
 public:
+	APacmanGameModeBase();
+	void PauseGame();
+	void ResumeGame();
+	void BeginNewGame();
+	void ReturnToMainMenu();
+	void QuitGame();
+	void NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostPawn* InGhost);
+	void CompleteLevel();
+	void BeginFrightenedMode();
+	UMaterial* GetTeleportBaseMaterial() const;
+	UMaterialInstance* GetGhostFrightenedModeMaterial() const;
+
+private:
 	UMaterial* TeleportBaseMaterial;
 	bool bShowInfoWidget;
 	APacmanPawn* Pacman;
@@ -39,16 +52,6 @@ public:
 	UPROPERTY() UUserWidget* PauseMenuWidget;
 	UPROPERTY() UGenericInfoWidget* GenericInfoWidget;
 
-
-	APacmanGameModeBase();
-	void PauseGame();
-	void ResumeGame();
-	void BeginNewGame();
-	void ReturnToMainMenu();
-	void QuitGame();
-	void NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostPawn* InGhost);
-	void CompleteLevel();
-	void BeginFrightenedMode();
 	void MoveGhosts(float DeltaTime);
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
@@ -56,3 +59,13 @@ public:
 
 	GENERATED_BODY()
 };
+
+FORCEINLINE UMaterial* APacmanGameModeBase::GetTeleportBaseMaterial() const
+{
+	return TeleportBaseMaterial;
+}
+
+FORCEINLINE UMaterialInstance* APacmanGameModeBase::GetGhostFrightenedModeMaterial() const
+{
+	return GhostFrightenedModeMaterial;
+}
