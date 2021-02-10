@@ -6,7 +6,7 @@
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Blueprint/UserWidget.h"
 #include "PacmanGameModeBase.h"
-#include "PacmanWidgets.h"
+#include "PacmanMiscClasses.h"
 #include "PacmanFood.h"
 
 PRAGMA_DISABLE_OPTIMIZATION

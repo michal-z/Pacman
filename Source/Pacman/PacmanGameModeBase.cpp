@@ -6,7 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "PacmanPawn.h"
 #include "GhostPawn.h"
-#include "PacmanWidgets.h"
+#include "PacmanMiscClasses.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
 
@@ -348,6 +348,15 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 					ReturnToMainMenu();
 				},
 				2.0f, false);
+
+			UPacmanHighscore* NewHighscore = Cast<UPacmanHighscore>(UGameplayStatics::CreateSaveGameObject(UPacmanHighscore::StaticClass()));
+			UPacmanHighscore* LoadedHighscore = Cast<UPacmanHighscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Highscore"), 0));
+			if (LoadedHighscore)
+			{
+				NewHighscore->Scores = LoadedHighscore->Scores;
+			}
+			NewHighscore->Scores.Add(Pacman->GetScore());
+			UGameplayStatics::SaveGameToSlot(NewHighscore, TEXT("Highscore"), 0);
 		}
 		else
 		{

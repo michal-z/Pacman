@@ -1,6 +1,7 @@
 #pragma once
 #include "Blueprint/UserWidget.h"
-#include "PacmanWidgets.generated.h"
+#include "GameFramework/SaveGame.h"
+#include "PacmanMiscClasses.generated.h"
 
 class UTextBlock;
 class UButton;
@@ -51,6 +52,16 @@ class PACMAN_API UPacmanHUDWidget : public UUserWidget
 public:
 	UPROPERTY(meta = (BindWidget)) UTextBlock* ScoreText;
 	UPROPERTY(meta = (BindWidget)) UTextBlock* LivesText;
+
+	GENERATED_BODY()
+};
+
+UCLASS()
+class PACMAN_API UPacmanHighscore : public USaveGame
+{
+public:
+	UPROPERTY()
+	TArray<int32> Scores;
 
 	GENERATED_BODY()
 };

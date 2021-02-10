@@ -15,6 +15,7 @@ public:
 	uint32 Kill();
 	void Move(float DeltaTime);
 	void AddScore(uint32 InScore);
+	uint32 GetScore() const;
 	void SetDefaultMaterial();
 	void SetTeleportMaterial();
 	FVector GetInitialLocation() const;
@@ -74,4 +75,9 @@ FORCEINLINE FVector APacmanPawn::GetCurrentDirection() const
 FORCEINLINE UMaterialInstanceDynamic* APacmanPawn::GetTeleportMaterial() const
 {
 	return TeleportMaterial;
+}
+
+FORCEINLINE uint32 APacmanPawn::GetScore() const
+{
+	return Score;
 }
