@@ -1,3 +1,3 @@
 # Pacman
 
- Pacman clone using UE 4.25.4 (wip).
+Pacman like game using UE 4.26.1 (wip).
