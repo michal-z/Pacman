@@ -58,12 +58,29 @@ public:
 	GENERATED_BODY()
 };
 
+USTRUCT()
+struct FHiscoreEntry
+{
+	UPROPERTY()
+	FString Name;
+
+	UPROPERTY()
+	uint32 Score;
+
+	GENERATED_BODY()
+};
+
+inline bool operator<(const FHiscoreEntry& Lhs, const FHiscoreEntry& Rhs)
+{
+	return Lhs.Score < Rhs.Score;
+}
+
 UCLASS()
 class PACMAN_API UPacmanHiscore : public USaveGame
 {
 public:
 	UPROPERTY()
-	TArray<int32> Scores;
+	TArray<FHiscoreEntry> Entries;
 
 	GENERATED_BODY()
 };

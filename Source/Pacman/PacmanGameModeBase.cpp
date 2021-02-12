@@ -350,12 +350,18 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 				2.0f, false);
 
 			UPacmanHiscore* NewHiscore = Cast<UPacmanHiscore>(UGameplayStatics::CreateSaveGameObject(UPacmanHiscore::StaticClass()));
-			UPacmanHiscore* LoadedHiscore = Cast<UPacmanHiscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Highscore"), 0));
+			UPacmanHiscore* LoadedHiscore = Cast<UPacmanHiscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Hiscore"), 0));
 			if (LoadedHiscore)
 			{
-				NewHiscore->Scores = LoadedHiscore->Scores;
+				NewHiscore->Entries = LoadedHiscore->Entries;
 			}
-			NewHiscore->Scores.Add(Pacman->GetScore());
+			NewHiscore->Entries.Add({ TEXT("Michal"), Pacman->GetScore() });
+			NewHiscore->Entries.StableSort(TGreater<FHiscoreEntry>());
+			const auto Size = NewHiscore->Entries.Num();
+			if (Size > 10)
+			{
+				NewHiscore->Entries.RemoveAt(Size - 1, Size - 10);
+			}
 			UGameplayStatics::SaveGameToSlot(NewHiscore, TEXT("Hiscore"), 0);
 		}
 		else
