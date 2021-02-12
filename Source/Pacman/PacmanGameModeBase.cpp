@@ -105,7 +105,7 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 			Teleport = {};
 		}
 	}
-	else if (GameLevel > 0 && !bShowInfoWidget)
+	else if (GameLevel > 0 && !GenericInfoWidget->IsInViewport())
 	{
 		Pacman->Move(DeltaTime);
 		MoveGhosts(DeltaTime);
@@ -337,32 +337,31 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 		{
 			GenericInfoWidget->Text->SetText(LOCTEXT("GameOver", "Game Over"));
 			GenericInfoWidget->AddToViewport();
-
-			bShowInfoWidget = true;
-
 			GetWorldTimerManager().SetTimer(TimerHandle,
 				[this]()
 				{
 					GenericInfoWidget->RemoveFromViewport();
-					bShowInfoWidget = false;
 					ReturnToMainMenu();
 				},
 				2.0f, false);
 
-			UPacmanHiscore* NewHiscore = Cast<UPacmanHiscore>(UGameplayStatics::CreateSaveGameObject(UPacmanHiscore::StaticClass()));
 			UPacmanHiscore* LoadedHiscore = Cast<UPacmanHiscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Hiscore"), 0));
-			if (LoadedHiscore)
+			if (LoadedHiscore == nullptr || (LoadedHiscore && Pacman->GetScore() > LoadedHiscore->Entries.Last().Score))
 			{
-				NewHiscore->Entries = LoadedHiscore->Entries;
+				UPacmanHiscore* NewHiscore = Cast<UPacmanHiscore>(UGameplayStatics::CreateSaveGameObject(UPacmanHiscore::StaticClass()));
+				if (LoadedHiscore)
+				{
+					NewHiscore->Entries = LoadedHiscore->Entries;
+				}
+				NewHiscore->Entries.Add({ TEXT("Michal"), Pacman->GetScore() });
+				NewHiscore->Entries.StableSort(TGreater<FHiscoreEntry>());
+				const auto Size = NewHiscore->Entries.Num();
+				if (Size > 10)
+				{
+					NewHiscore->Entries.RemoveAt(Size - 1, Size - 10);
+				}
+				UGameplayStatics::SaveGameToSlot(NewHiscore, TEXT("Hiscore"), 0);
 			}
-			NewHiscore->Entries.Add({ TEXT("Michal"), Pacman->GetScore() });
-			NewHiscore->Entries.StableSort(TGreater<FHiscoreEntry>());
-			const auto Size = NewHiscore->Entries.Num();
-			if (Size > 10)
-			{
-				NewHiscore->Entries.RemoveAt(Size - 1, Size - 10);
-			}
-			UGameplayStatics::SaveGameToSlot(NewHiscore, TEXT("Hiscore"), 0);
 		}
 		else
 		{
@@ -407,13 +406,10 @@ void APacmanGameModeBase::CompleteLevel()
 	GenericInfoWidget->Text->SetText(LOCTEXT("CompleteLevel", "You win! Congratulations!"));
 	GenericInfoWidget->AddToViewport();
 
-	bShowInfoWidget = true;
-
 	GetWorldTimerManager().SetTimer(TimerHandle,
 		[this]()
 		{
 			GenericInfoWidget->RemoveFromViewport();
-			bShowInfoWidget = false;
 			ReturnToMainMenu();
 		},
 		2.0f, false);
@@ -434,13 +430,10 @@ void APacmanGameModeBase::ShowGetReadyInfoWidget()
 	GenericInfoWidget->Text->SetText(LOCTEXT("Ready", "Get Ready!"));
 	GenericInfoWidget->AddToViewport();
 
-	bShowInfoWidget = true;
-
 	GetWorldTimerManager().SetTimer(TimerHandle,
 		[this]()
 		{
 			GenericInfoWidget->RemoveFromViewport();
-			bShowInfoWidget = false;
 		},
 		2.0f, false);
 }

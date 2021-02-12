@@ -24,7 +24,6 @@ public:
 
 private:
 	UMaterial* TeleportBaseMaterial;
-	bool bShowInfoWidget;
 	APacmanPawn* Pacman;
 	TArray<AGhostPawn*> Ghosts;
 	UMaterialInstance* GhostFrightenedModeMaterial;
