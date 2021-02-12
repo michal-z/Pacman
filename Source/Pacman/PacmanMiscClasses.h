@@ -19,6 +19,19 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UEditableTextBox* PlayerName;
 
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* HiscoreSlot0;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* HiscoreSlot1;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* HiscoreSlot2;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* HiscoreSlot3;
+
+private:
 	virtual void NativeConstruct() override;
 
 	GENERATED_BODY()
