@@ -5,7 +5,7 @@
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Blueprint/UserWidget.h"
 #include "PacmanPawn.h"
-#include "GhostPawn.h"
+#include "PacmanGhostPawn.h"
 #include "PacmanMiscClasses.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
@@ -349,14 +349,14 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 				},
 				2.0f, false);
 
-			UPacmanHighscore* NewHighscore = Cast<UPacmanHighscore>(UGameplayStatics::CreateSaveGameObject(UPacmanHighscore::StaticClass()));
-			UPacmanHighscore* LoadedHighscore = Cast<UPacmanHighscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Highscore"), 0));
-			if (LoadedHighscore)
+			UPacmanHiscore* NewHiscore = Cast<UPacmanHiscore>(UGameplayStatics::CreateSaveGameObject(UPacmanHiscore::StaticClass()));
+			UPacmanHiscore* LoadedHiscore = Cast<UPacmanHiscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Highscore"), 0));
+			if (LoadedHiscore)
 			{
-				NewHighscore->Scores = LoadedHighscore->Scores;
+				NewHiscore->Scores = LoadedHiscore->Scores;
 			}
-			NewHighscore->Scores.Add(Pacman->GetScore());
-			UGameplayStatics::SaveGameToSlot(NewHighscore, TEXT("Highscore"), 0);
+			NewHiscore->Scores.Add(Pacman->GetScore());
+			UGameplayStatics::SaveGameToSlot(NewHiscore, TEXT("Hiscore"), 0);
 		}
 		else
 		{

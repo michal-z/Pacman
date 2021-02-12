@@ -1,10 +1,12 @@
 #pragma once
-#include "Blueprint/UserWidget.h"
+#include "GameFramework/Actor.h"
 #include "GameFramework/SaveGame.h"
+#include "Blueprint/UserWidget.h"
 #include "PacmanMiscClasses.generated.h"
 
 class UTextBlock;
 class UButton;
+class UStaticMeshComponent;
 
 UCLASS(Abstract)
 class PACMAN_API UGenericInfoWidget : public UUserWidget
@@ -57,7 +59,7 @@ public:
 };
 
 UCLASS()
-class PACMAN_API UPacmanHighscore : public USaveGame
+class PACMAN_API UPacmanHiscore : public USaveGame
 {
 public:
 	UPROPERTY()
@@ -65,3 +67,25 @@ public:
 
 	GENERATED_BODY()
 };
+
+UCLASS()
+class PACMAN_API APacmanFood : public AActor
+{
+public:
+	APacmanFood();
+	uint32 GetScore() const;
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Pacman Food")
+	uint32 Score;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	UStaticMeshComponent* MeshComponent;
+
+	GENERATED_BODY()
+};
+
+FORCEINLINE uint32 APacmanFood::GetScore() const
+{
+	return Score;
+}

@@ -1,4 +1,4 @@
-#include "GhostPawn.h"
+#include "PacmanGhostPawn.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Kismet/GameplayStatics.h"

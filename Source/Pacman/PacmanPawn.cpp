@@ -7,7 +7,6 @@
 #include "Blueprint/UserWidget.h"
 #include "PacmanGameModeBase.h"
 #include "PacmanMiscClasses.h"
-#include "PacmanFood.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
 

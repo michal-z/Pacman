@@ -1,6 +1,6 @@
 #pragma once
 #include "GameFramework/Pawn.h"
-#include "GhostPawn.generated.h"
+#include "PacmanGhostPawn.generated.h"
 
 class USphereComponent;
 class UPawnMovementComponent;
