@@ -1,7 +1,17 @@
 #include "PacmanMiscClasses.h"
 #include "Components/Button.h"
+#include "Components/EditableTextBox.h"
 #include "Kismet/GameplayStatics.h"
 #include "PacmanGameModeBase.h"
+
+void UGenericInfoWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	PlayerName->OnTextCommitted.AddUniqueDynamic(GameMode, &APacmanGameModeBase::OnPlayerNameCommit);
+}
+
 
 void UMainMenuWidget::NativeConstruct()
 {

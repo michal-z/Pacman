@@ -5,6 +5,7 @@
 #include "PacmanMiscClasses.generated.h"
 
 class UTextBlock;
+class UEditableTextBox;
 class UButton;
 class UStaticMeshComponent;
 
@@ -14,6 +15,11 @@ class PACMAN_API UGenericInfoWidget : public UUserWidget
 public:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Text;
+
+	UPROPERTY(meta = (BindWidget))
+	UEditableTextBox* PlayerName;
+
+	virtual void NativeConstruct() override;
 
 	GENERATED_BODY()
 };
@@ -62,7 +68,7 @@ USTRUCT()
 struct FHiscoreEntry
 {
 	UPROPERTY()
-	FString Name;
+	FText Name;
 
 	UPROPERTY()
 	uint32 Score;

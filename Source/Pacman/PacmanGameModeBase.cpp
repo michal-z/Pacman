@@ -1,6 +1,7 @@
 #include "PacmanGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/TextBlock.h"
+#include "Components/EditableTextBox.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Blueprint/UserWidget.h"
@@ -276,6 +277,31 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 	}
 }
 
+void APacmanGameModeBase::OnPlayerNameCommit(const FText& PlayerName, ETextCommit::Type CommitMethod)
+{
+	if (CommitMethod != ETextCommit::OnEnter)
+	{
+		return;
+	}
+	UPacmanHiscore* LoadedHiscore = Cast<UPacmanHiscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Hiscore"), 0));
+	UPacmanHiscore* NewHiscore = Cast<UPacmanHiscore>(UGameplayStatics::CreateSaveGameObject(UPacmanHiscore::StaticClass()));
+	if (LoadedHiscore)
+	{
+		NewHiscore->Entries = LoadedHiscore->Entries;
+	}
+	NewHiscore->Entries.Add({ PlayerName, Pacman->GetScore() });
+	NewHiscore->Entries.StableSort(TGreater<FHiscoreEntry>());
+	const auto Size = NewHiscore->Entries.Num();
+	if (Size > 10)
+	{
+		NewHiscore->Entries.RemoveAt(Size - 1, Size - 10);
+	}
+	UGameplayStatics::SaveGameToSlot(NewHiscore, TEXT("Hiscore"), 0);
+
+	GenericInfoWidget->RemoveFromViewport();
+	ReturnToMainMenu();
+}
+
 void APacmanGameModeBase::PauseGame()
 {
 	check(PauseMenuWidgetClass);
@@ -333,34 +359,31 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 			return;
 		}
 
-		if (Pacman->Kill() == 0)
+		if (Pacman->Kill() == 0) // Pacman lost all lives.
 		{
-			GenericInfoWidget->Text->SetText(LOCTEXT("GameOver", "Game Over"));
-			GenericInfoWidget->AddToViewport();
-			GetWorldTimerManager().SetTimer(TimerHandle,
-				[this]()
-				{
-					GenericInfoWidget->RemoveFromViewport();
-					ReturnToMainMenu();
-				},
-				2.0f, false);
-
 			UPacmanHiscore* LoadedHiscore = Cast<UPacmanHiscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Hiscore"), 0));
-			if (LoadedHiscore == nullptr || (LoadedHiscore && Pacman->GetScore() > LoadedHiscore->Entries.Last().Score))
+			if (LoadedHiscore == nullptr || (LoadedHiscore && Pacman->GetScore() > LoadedHiscore->Entries.Last().Score) || (LoadedHiscore && LoadedHiscore->Entries.Num() < 10))
 			{
-				UPacmanHiscore* NewHiscore = Cast<UPacmanHiscore>(UGameplayStatics::CreateSaveGameObject(UPacmanHiscore::StaticClass()));
-				if (LoadedHiscore)
-				{
-					NewHiscore->Entries = LoadedHiscore->Entries;
-				}
-				NewHiscore->Entries.Add({ TEXT("Michal"), Pacman->GetScore() });
-				NewHiscore->Entries.StableSort(TGreater<FHiscoreEntry>());
-				const auto Size = NewHiscore->Entries.Num();
-				if (Size > 10)
-				{
-					NewHiscore->Entries.RemoveAt(Size - 1, Size - 10);
-				}
-				UGameplayStatics::SaveGameToSlot(NewHiscore, TEXT("Hiscore"), 0);
+				GenericInfoWidget->Text->SetText(LOCTEXT("EnterName", "Type your name and press <Enter>"));
+				GenericInfoWidget->AddToViewport();
+				GenericInfoWidget->PlayerName->SetVisibility(UWidget::ConvertRuntimeToSerializedVisibility(EVisibility::Visible));
+				GenericInfoWidget->PlayerName->SetFocus();
+
+				APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+				PC->SetInputMode(FInputModeUIOnly());
+				PC->bShowMouseCursor = true;
+			}
+			else
+			{
+				GenericInfoWidget->Text->SetText(LOCTEXT("GameOver", "Game Over"));
+				GenericInfoWidget->AddToViewport();
+				GetWorldTimerManager().SetTimer(TimerHandle,
+					[this]()
+					{
+						GenericInfoWidget->RemoveFromViewport();
+						ReturnToMainMenu();
+					},
+					2.0f, false);
 			}
 		}
 		else
@@ -405,7 +428,6 @@ void APacmanGameModeBase::CompleteLevel()
 {
 	GenericInfoWidget->Text->SetText(LOCTEXT("CompleteLevel", "You win! Congratulations!"));
 	GenericInfoWidget->AddToViewport();
-
 	GetWorldTimerManager().SetTimer(TimerHandle,
 		[this]()
 		{
@@ -429,7 +451,6 @@ void APacmanGameModeBase::ShowGetReadyInfoWidget()
 {
 	GenericInfoWidget->Text->SetText(LOCTEXT("Ready", "Get Ready!"));
 	GenericInfoWidget->AddToViewport();
-
 	GetWorldTimerManager().SetTimer(TimerHandle,
 		[this]()
 		{

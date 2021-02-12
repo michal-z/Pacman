@@ -11,6 +11,7 @@ class PACMAN_API APacmanGameModeBase : public AGameModeBase
 {
 public:
 	APacmanGameModeBase();
+	UFUNCTION() void OnPlayerNameCommit(const FText& InText, ETextCommit::Type CommitMethod);
 	void PauseGame();
 	void ResumeGame();
 	void BeginNewGame();
