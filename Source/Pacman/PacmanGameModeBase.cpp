@@ -122,11 +122,11 @@ void APacmanGameModeBase::BeginPlay()
 		UPacmanHiscore* LoadedHiscore = Cast<UPacmanHiscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Hiscore"), 0));
 		if (LoadedHiscore)
 		{
-			HUDWidget->HiscoreText->SetText(FText::Format(LOCTEXT("Hiscore", "Hiscore: {0}"), LoadedHiscore->Entries[0].Score));
+			HUDWidget->HiscoreText->SetText(FText::Format(LOCTEXT("Hiscore", "Hiscore: {0}"), LoadedHiscore->Entries.Last().Score));
 		}
 		else
 		{
-			HUDWidget->HiscoreText->SetText(LOCTEXT("Hiscore", "Hiscore: 0"));
+			HUDWidget->HiscoreText->SetText(LOCTEXT("Hiscore", "Hiscore: ---"));
 		}
 
 		TArray<AActor*> FoodActors;
