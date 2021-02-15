@@ -3,22 +3,17 @@
 #include "PacmanPawn.generated.h"
 
 class UPawnMovementComponent;
-class UPacmanHUDWidget;
 class USphereComponent;
-class APacmanFood;
 
 UCLASS()
 class PACMAN_API APacmanPawn : public APawn
 {
 public:
 	APacmanPawn();
-	uint32 Kill();
 	void Move(float DeltaTime);
-	void AddScore(uint32 InScore);
-	uint32 GetScore() const;
+	void MoveToStartLocation();
 	void SetDefaultMaterial();
 	void SetTeleportMaterial();
-	FVector GetInitialLocation() const;
 	FVector GetCurrentDirection() const;
 	UMaterialInstanceDynamic* GetTeleportMaterial() const;
 
@@ -28,14 +23,8 @@ private:
 	FVector InitialLocation;
 	FVector CurrentDirection;
 	FVector WantedDirection;
-	uint32 Score;
-	uint32 NumLives;
-	uint32 NumFoodLeft;
-	TSubclassOf<APacmanFood> SuperFoodClass;
-	TSubclassOf<UUserWidget> HUDWidgetClass;
 	UPROPERTY() UPawnMovementComponent* MovementComponent;
 	UPROPERTY() USphereComponent* CollisionComponent;
-	UPROPERTY() UPacmanHUDWidget* HUDWidget;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* VisualComponent;
@@ -62,11 +51,6 @@ FORCEINLINE void APacmanPawn::SetTeleportMaterial()
 	VisualComponent->SetMaterial(0, TeleportMaterial);
 }
 
-FORCEINLINE FVector APacmanPawn::GetInitialLocation() const
-{
-	return InitialLocation;
-}
-
 FORCEINLINE FVector APacmanPawn::GetCurrentDirection() const
 {
 	return CurrentDirection;
@@ -75,9 +59,4 @@ FORCEINLINE FVector APacmanPawn::GetCurrentDirection() const
 FORCEINLINE UMaterialInstanceDynamic* APacmanPawn::GetTeleportMaterial() const
 {
 	return TeleportMaterial;
-}
-
-FORCEINLINE uint32 APacmanPawn::GetScore() const
-{
-	return Score;
 }

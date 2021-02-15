@@ -1,12 +1,10 @@
 #include "PacmanPawn.h"
+#include "PacmanGameModeBase.h"
+#include "PacmanMiscClasses.h"
 #include "Components/SphereComponent.h"
-#include "Components/TextBlock.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/FloatingPawnMovement.h"
-#include "Blueprint/UserWidget.h"
-#include "PacmanGameModeBase.h"
-#include "PacmanMiscClasses.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
 
@@ -45,20 +43,10 @@ APacmanPawn::APacmanPawn()
 	MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
 	MovementComponent->UpdatedComponent = RootComponent;
 
-	{
-		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_HUD"));
-		HUDWidgetClass = Finder.Class;
-	}
-	{
-		static ConstructorHelpers::FClassFinder<APacmanFood> Finder(TEXT("/Game/Blueprints/BP_SuperFood"));
-		SuperFoodClass = Finder.Class;
-	}
-
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
 	CurrentDirection = FVector(-1.0f, 0.0f, 0.0f);
 	WantedDirection = CurrentDirection;
-	NumLives = 3;
 }
 
 void APacmanPawn::MoveUp()
@@ -88,17 +76,6 @@ void APacmanPawn::BeginPlay()
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != TEXT("Main"))
 	{
 		InitialLocation = GetActorLocation();
-
-		check(HUDWidgetClass);
-		HUDWidget = CastChecked<UPacmanHUDWidget>(CreateWidget(GetWorld(), HUDWidgetClass));
-		HUDWidget->AddToViewport();
-
-		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
-		HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), NumLives));
-
-		TArray<AActor*> FoodActors;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), APacmanFood::StaticClass(), FoodActors);
-		NumFoodLeft = FoodActors.Num();
 
 		APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 		if (GameMode)
@@ -137,41 +114,11 @@ void APacmanPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 	Super::NotifyActorBeginOverlap(OtherActor);
 
 	APacmanFood* Food = Cast<APacmanFood>(OtherActor);
-	if (Food)
+	APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode && Food)
 	{
-		Score += Food->GetScore();
-		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
-		Food->Destroy();
-
-		if (--NumFoodLeft == 0)
-		{
-			APacmanGameModeBase* GameMode = CastChecked<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-			GameMode->CompleteLevel();
-		}
-		else if (Food->IsA(SuperFoodClass))
-		{
-			APacmanGameModeBase* GameMode = CastChecked<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-			GameMode->BeginFrightenedMode();
-		}
+		GameMode->HandleActorOverlap(this, Food);
 	}
-}
-
-uint32 APacmanPawn::Kill()
-{
-	check(NumLives > 0);
-
-	NumLives -= 1;
-
-	HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), NumLives));
-
-	if (NumLives > 0)
-	{
-		APacmanPawn* CDO = StaticClass()->GetDefaultObject<APacmanPawn>();
-		CurrentDirection = CDO->CurrentDirection;
-		WantedDirection = CDO->WantedDirection;
-	}
-
-	return NumLives;
 }
 
 void APacmanPawn::Move(float DeltaTime)
@@ -201,10 +148,13 @@ void APacmanPawn::Move(float DeltaTime)
 	}
 }
 
-void APacmanPawn::AddScore(uint32 InScore)
+void APacmanPawn::MoveToStartLocation()
 {
-	Score += InScore;
-	HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), Score));
+	SetActorLocation(InitialLocation, false, nullptr, ETeleportType::ResetPhysics);
+
+	APacmanPawn* CDO = StaticClass()->GetDefaultObject<APacmanPawn>();
+	CurrentDirection = CDO->CurrentDirection;
+	WantedDirection = CDO->WantedDirection;
 }
 
 #undef LOCTEXT_NAMESPACE

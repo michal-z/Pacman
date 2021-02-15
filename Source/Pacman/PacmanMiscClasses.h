@@ -35,6 +35,9 @@ private:
 
 	virtual void NativeConstruct() override;
 
+	UFUNCTION() void OnNewGame();
+	UFUNCTION() void OnQuitGame();
+
 	GENERATED_BODY()
 };
 
@@ -47,6 +50,8 @@ private:
 
 	virtual void NativeConstruct() override;
 
+	UFUNCTION() void OnReturnToMainMenu();
+
 	GENERATED_BODY()
 };
 
@@ -56,6 +61,8 @@ class PACMAN_API UPacmanHUDWidget : public UUserWidget
 public:
 	UPROPERTY(meta = (BindWidget)) UTextBlock* ScoreText;
 	UPROPERTY(meta = (BindWidget)) UTextBlock* LivesText;
+	UPROPERTY(meta = (BindWidget)) UTextBlock* LevelText;
+	UPROPERTY(meta = (BindWidget)) UTextBlock* HiscoreText;
 
 	GENERATED_BODY()
 };

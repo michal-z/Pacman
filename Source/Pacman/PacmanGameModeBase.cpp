@@ -18,6 +18,10 @@ static constexpr float GMapTileSize = 100.0f;
 static constexpr float GFrightenedModeDuration = 5.0f;
 static constexpr int32 GNumHiscoreEntries = 4;
 
+static uint32 GPacmanNumLives;
+static uint32 GPacmanScore;
+static uint32 GGameLevel;
+
 APacmanGameModeBase::APacmanGameModeBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -42,6 +46,14 @@ APacmanGameModeBase::APacmanGameModeBase()
 	{
 		static ConstructorHelpers::FObjectFinder<UMaterial> Finder(TEXT("/Game/Materials/M_TeleportBase"));
 		TeleportBaseMaterial = Finder.Object;
+	}
+	{
+		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_HUD"));
+		HUDWidgetClass = Finder.Class;
+	}
+	{
+		static ConstructorHelpers::FClassFinder<APacmanFood> Finder(TEXT("/Game/Blueprints/BP_SuperFood"));
+		SuperFoodClass = Finder.Class;
 	}
 }
 
@@ -76,6 +88,10 @@ void APacmanGameModeBase::BeginPlay()
 
 		PC->SetInputMode(FInputModeUIOnly());
 		PC->bShowMouseCursor = true;
+
+		GGameLevel = 0;
+		GPacmanScore = 0;
+		GPacmanNumLives = 3;
 	}
 	else
 	{
@@ -93,7 +109,29 @@ void APacmanGameModeBase::BeginPlay()
 		}
 
 		GhostModeTimer = GhostModeDurations[GhostModeIndex];
-		GameLevel = 1;
+		GGameLevel += 1;
+
+		check(HUDWidgetClass);
+		HUDWidget = CastChecked<UPacmanHUDWidget>(CreateWidget(GetWorld(), HUDWidgetClass));
+		HUDWidget->AddToViewport();
+
+		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), GPacmanScore));
+		HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), GPacmanNumLives));
+		HUDWidget->LevelText->SetText(FText::Format(LOCTEXT("Level", "Level: {0}"), GGameLevel));
+
+		UPacmanHiscore* LoadedHiscore = Cast<UPacmanHiscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Hiscore"), 0));
+		if (LoadedHiscore)
+		{
+			HUDWidget->HiscoreText->SetText(FText::Format(LOCTEXT("Hiscore", "Hiscore: {0}"), LoadedHiscore->Entries[0].Score));
+		}
+		else
+		{
+			HUDWidget->HiscoreText->SetText(LOCTEXT("Hiscore", "Hiscore: 0"));
+		}
+
+		TArray<AActor*> FoodActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), APacmanFood::StaticClass(), FoodActors);
+		NumFoodLeft = FoodActors.Num();
 
 		ShowGetReadyInfoWidget();
 	}
@@ -120,7 +158,7 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 			Teleport = {};
 		}
 	}
-	else if (GameLevel > 0 && !GenericInfoWidget->IsInViewport())
+	else if (GGameLevel > 0 && !GenericInfoWidget->IsInViewport())
 	{
 		Pacman->Move(DeltaTime);
 		MoveGhosts(DeltaTime);
@@ -303,7 +341,7 @@ void APacmanGameModeBase::SaveHiscoreName(const FText& PlayerName, ETextCommit::
 	{
 		NewHiscore->Entries = LoadedHiscore->Entries;
 	}
-	NewHiscore->Entries.Add({ PlayerName, Pacman->GetScore() });
+	NewHiscore->Entries.Add({ PlayerName, GPacmanScore });
 	NewHiscore->Entries.StableSort(TGreater<FHiscoreEntry>());
 	const auto Size = NewHiscore->Entries.Num();
 	if (Size > GNumHiscoreEntries)
@@ -313,7 +351,7 @@ void APacmanGameModeBase::SaveHiscoreName(const FText& PlayerName, ETextCommit::
 	UGameplayStatics::SaveGameToSlot(NewHiscore, TEXT("Hiscore"), 0);
 
 	GenericInfoWidget->RemoveFromViewport();
-	ReturnToMainMenu();
+	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Main"));
 }
 
 void APacmanGameModeBase::PauseGame()
@@ -346,37 +384,52 @@ void APacmanGameModeBase::ResumeGame()
 	PC->bShowMouseCursor = false;
 }
 
-void APacmanGameModeBase::BeginNewGame()
+uint32 APacmanGameModeBase::KillPacman()
 {
-	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Level_01"));
+	check(GPacmanNumLives > 0);
+
+	GPacmanNumLives -= 1;
+	HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), GPacmanNumLives));
+
+	return GPacmanNumLives;
 }
 
-void APacmanGameModeBase::QuitGame()
+void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Other)
 {
-	UKismetSystemLibrary::QuitGame(GetWorld(), nullptr, EQuitPreference::Quit, true);
-}
+	APacmanPawn* PacmanPawn = Cast<APacmanPawn>(PacmanOrGhost);
+	APacmanFood* PacmanFood = Cast<APacmanFood>(Other);
+	AGhostPawn* GhostPawn = Cast<AGhostPawn>(Other);
 
-void APacmanGameModeBase::ReturnToMainMenu()
-{
-	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Main"));
-}
-
-void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostPawn* InGhost)
-{
-	if (Cast<APacmanPawn>(PacmanOrGhost)) // Pacman - Ghost overlap.
+	if (PacmanPawn && PacmanFood)
 	{
-		if (FrightenedModeTimer > 0.0f && InGhost->IsFrightened())
+		GPacmanScore += PacmanFood->GetScore();
+		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), GPacmanScore));
+		PacmanFood->Destroy();
+
+		if (--NumFoodLeft == 0)
 		{
-			InGhost->SetInHouseState();
-			InGhost->FrozenModeTimer = 5.0f;
-			Pacman->AddScore(100);
+			CompleteLevel();
+		}
+		else if (PacmanFood->IsA(SuperFoodClass))
+		{
+			BeginFrightenedMode();
+		}
+	}
+	else if (PacmanPawn && GhostPawn) // Pacman - Ghost overlap.
+	{
+		if (FrightenedModeTimer > 0.0f && GhostPawn->IsFrightened())
+		{
+			GhostPawn->MoveToGhostHouse();
+			GhostPawn->FrozenModeTimer = 5.0f;
+			GPacmanScore += 100;
+			HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), GPacmanScore));
 			return;
 		}
 
-		if (Pacman->Kill() == 0) // Pacman lost all lives.
+		if (KillPacman() == 0) // Pacman lost all lives.
 		{
 			UPacmanHiscore* LoadedHiscore = Cast<UPacmanHiscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Hiscore"), 0));
-			if (LoadedHiscore == nullptr || (LoadedHiscore && Pacman->GetScore() > LoadedHiscore->Entries.Last().Score) || (LoadedHiscore && LoadedHiscore->Entries.Num() < GNumHiscoreEntries))
+			if (LoadedHiscore == nullptr || (LoadedHiscore && GPacmanScore > LoadedHiscore->Entries.Last().Score) || (LoadedHiscore && LoadedHiscore->Entries.Num() < GNumHiscoreEntries))
 			{
 				GenericInfoWidget->Text->SetText(LOCTEXT("EnterName", "Type your name and press <Enter>"));
 				GenericInfoWidget->AddToViewport();
@@ -395,7 +448,7 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 					[this]()
 					{
 						GenericInfoWidget->RemoveFromViewport();
-						ReturnToMainMenu();
+						UGameplayStatics::OpenLevel(GetWorld(), TEXT("Main"));
 					},
 					2.0f, false);
 			}
@@ -409,10 +462,10 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 				Pacman->GetTeleportMaterial(), 1.0f, -1.0f,
 				[this]()
 				{
-					Pacman->SetActorLocation(Pacman->GetInitialLocation(), false, nullptr, ETeleportType::ResetPhysics);
+					Pacman->MoveToStartLocation();
 					for (AGhostPawn* Ghost : Ghosts)
 					{
-						Ghost->SetInHouseState();
+						Ghost->MoveToGhostHouse();
 					}
 				},
 				[this]()
@@ -428,25 +481,25 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 			FrightenedModeTimer = 0.0f;
 		}
 	}
-	else // Ghost - Ghost overlap.
+	else if (GhostPawn) // Ghost - Ghost overlap.
 	{
-		AGhostPawn* OtherGhost = Cast<AGhostPawn>(PacmanOrGhost);
-		if (OtherGhost && InGhost->FrozenModeTimer != 0.75f)
+		AGhostPawn* SecondGhostPawn = Cast<AGhostPawn>(PacmanOrGhost);
+		if (SecondGhostPawn && GhostPawn->FrozenModeTimer != 0.75f)
 		{
-			OtherGhost->FrozenModeTimer = 0.75f;
+			SecondGhostPawn->FrozenModeTimer = 0.75f;
 		}
 	}
 }
 
 void APacmanGameModeBase::CompleteLevel()
 {
-	GenericInfoWidget->Text->SetText(LOCTEXT("CompleteLevel", "You win! Congratulations!"));
+	GenericInfoWidget->Text->SetText(FText::Format(LOCTEXT("CompleteLevel", "You have completed Level {0}. Congratulations!"), GGameLevel));
 	GenericInfoWidget->AddToViewport();
 	GetWorldTimerManager().SetTimer(TimerHandle,
 		[this]()
 		{
 			GenericInfoWidget->RemoveFromViewport();
-			ReturnToMainMenu();
+			UGameplayStatics::OpenLevel(GetWorld(), TEXT("Level_01"));
 		},
 		2.0f, false);
 }

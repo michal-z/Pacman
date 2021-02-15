@@ -22,7 +22,7 @@ public:
 	float FrozenModeTimer;
 
 	AGhostPawn();
-	void SetInHouseState();
+	void MoveToGhostHouse();
 	void EnableFrightenedMode();
 	void DisableFrightenedMode();
 	void Move(float DeltaTime);

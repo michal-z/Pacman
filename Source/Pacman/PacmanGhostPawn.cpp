@@ -79,12 +79,12 @@ void AGhostPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 		APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 		if (GameMode)
 		{
-			GameMode->NotifyGhostBeginOverlap(OtherActor, this);
+			GameMode->HandleActorOverlap(OtherActor, this);
 		}
 	}
 }
 
-void AGhostPawn::SetInHouseState()
+void AGhostPawn::MoveToGhostHouse()
 {
 	AGhostPawn* CDO = StaticClass()->GetDefaultObject<AGhostPawn>();
 

@@ -17,9 +17,18 @@ void UMainMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	NewGameButton->OnClicked.AddUniqueDynamic(GameMode, &APacmanGameModeBase::BeginNewGame);
-	QuitGameButton->OnClicked.AddUniqueDynamic(GameMode, &APacmanGameModeBase::QuitGame);
+	NewGameButton->OnClicked.AddUniqueDynamic(this, &UMainMenuWidget::OnNewGame);
+	QuitGameButton->OnClicked.AddUniqueDynamic(this, &UMainMenuWidget::OnQuitGame);
+}
+
+void UMainMenuWidget::OnNewGame()
+{
+	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Level_01"));
+}
+
+void UMainMenuWidget::OnQuitGame()
+{
+	UKismetSystemLibrary::QuitGame(GetWorld(), nullptr, EQuitPreference::Quit, true);
 }
 
 
@@ -27,9 +36,15 @@ void UPauseMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	APacmanGameModeBase* GameMode = CastChecked<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 	ResumeGameButton->OnClicked.AddUniqueDynamic(GameMode, &APacmanGameModeBase::ResumeGame);
-	ReturnToMainMenuButton->OnClicked.AddUniqueDynamic(GameMode, &APacmanGameModeBase::ReturnToMainMenu);
+
+	ReturnToMainMenuButton->OnClicked.AddUniqueDynamic(this, &UPauseMenuWidget::OnReturnToMainMenu);
+}
+
+void UPauseMenuWidget::OnReturnToMainMenu()
+{
+	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Main"));
 }
 
 
