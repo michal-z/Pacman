@@ -7,29 +7,15 @@
 class UTextBlock;
 class UEditableTextBox;
 class UButton;
+class UVerticalBox;
 class UStaticMeshComponent;
 
 UCLASS(Abstract)
 class PACMAN_API UGenericInfoWidget : public UUserWidget
 {
 public:
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* Text;
-
-	UPROPERTY(meta = (BindWidget))
-	UEditableTextBox* PlayerName;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* HiscoreSlot0;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* HiscoreSlot1;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* HiscoreSlot2;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* HiscoreSlot3;
+	UPROPERTY(meta = (BindWidget)) UTextBlock* Text;
+	UPROPERTY(meta = (BindWidget)) UEditableTextBox* PlayerName;
 
 private:
 	virtual void NativeConstruct() override;
@@ -40,14 +26,14 @@ private:
 UCLASS(Abstract)
 class PACMAN_API UMainMenuWidget : public UUserWidget
 {
+public:
+	UPROPERTY(meta = (BindWidget)) UVerticalBox* HiscoreBox;
+
 private:
 	UPROPERTY(meta = (BindWidget)) UButton* NewGameButton;
 	UPROPERTY(meta = (BindWidget)) UButton* QuitGameButton;
 
 	virtual void NativeConstruct() override;
-
-	UFUNCTION() void OnNewGame();
-	UFUNCTION() void OnQuitGame();
 
 	GENERATED_BODY()
 };
@@ -60,9 +46,6 @@ private:
 	UPROPERTY(meta = (BindWidget)) UButton* ReturnToMainMenuButton;
 
 	virtual void NativeConstruct() override;
-
-	UFUNCTION() void OnResumeGame();
-	UFUNCTION() void OnReturnToMainMenu();
 
 	GENERATED_BODY()
 };

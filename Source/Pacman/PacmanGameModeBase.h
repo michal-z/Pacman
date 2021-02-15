@@ -3,6 +3,7 @@
 #include "PacmanGameModeBase.generated.h"
 
 class UGenericInfoWidget;
+class UMainMenuWidget;
 class APacmanPawn;
 class AGhostPawn;
 
@@ -11,12 +12,12 @@ class PACMAN_API APacmanGameModeBase : public AGameModeBase
 {
 public:
 	APacmanGameModeBase();
-	UFUNCTION() void OnPlayerNameCommit(const FText& InText, ETextCommit::Type CommitMethod);
+	UFUNCTION() void SaveHiscoreName(const FText& InText, ETextCommit::Type CommitMethod);
+	UFUNCTION() void BeginNewGame();
+	UFUNCTION() void QuitGame();
+	UFUNCTION() void ResumeGame();
+	UFUNCTION() void ReturnToMainMenu();
 	void PauseGame();
-	void ResumeGame();
-	void BeginNewGame();
-	void ReturnToMainMenu();
-	void QuitGame();
 	void NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostPawn* InGhost);
 	void CompleteLevel();
 	void BeginFrightenedMode();
@@ -48,7 +49,7 @@ private:
 		TFunction<void()> CalledWhenOpacity1;
 	}
 	Teleport;
-	UPROPERTY() UUserWidget* MainMenuWidget;
+	UPROPERTY() UMainMenuWidget* MainMenuWidget;
 	UPROPERTY() UUserWidget* PauseMenuWidget;
 	UPROPERTY() UGenericInfoWidget* GenericInfoWidget;
 

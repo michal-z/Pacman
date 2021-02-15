@@ -1,13 +1,14 @@
 #include "PacmanGameModeBase.h"
+#include "PacmanPawn.h"
+#include "PacmanGhostPawn.h"
+#include "PacmanMiscClasses.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/TextBlock.h"
 #include "Components/EditableTextBox.h"
 #include "Components/SphereComponent.h"
+#include "Components/VerticalBox.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Blueprint/UserWidget.h"
-#include "PacmanPawn.h"
-#include "PacmanGhostPawn.h"
-#include "PacmanMiscClasses.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
 
@@ -15,6 +16,7 @@ PRAGMA_DISABLE_OPTIMIZATION
 
 static constexpr float GMapTileSize = 100.0f;
 static constexpr float GFrightenedModeDuration = 5.0f;
+static constexpr int32 GNumHiscoreEntries = 4;
 
 APacmanGameModeBase::APacmanGameModeBase()
 {
@@ -57,8 +59,20 @@ void APacmanGameModeBase::BeginPlay()
 	{
 		check(MainMenuWidgetClass);
 
-		MainMenuWidget = CreateWidget(GetWorld(), MainMenuWidgetClass);
+		MainMenuWidget = CastChecked<UMainMenuWidget>(CreateWidget(GetWorld(), MainMenuWidgetClass));
 		MainMenuWidget->AddToViewport();
+
+		UPacmanHiscore* LoadedHiscore = Cast<UPacmanHiscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Hiscore"), 0));
+		if (LoadedHiscore)
+		{
+			for (const FHiscoreEntry& Entry : LoadedHiscore->Entries)
+			{
+				const auto Text = FText::FormatNamed(FText::FromString(TEXT("{PlayerName}: {Score}")), TEXT("PlayerName"), Entry.Name, TEXT("Score"), FText::AsNumber(Entry.Score));
+				auto Widget = NewObject<UTextBlock>(this, UTextBlock::StaticClass());
+				Widget->SetText(Text);
+				MainMenuWidget->HiscoreBox->AddChildToVerticalBox(Widget);
+			}
+		}
 
 		PC->SetInputMode(FInputModeUIOnly());
 		PC->bShowMouseCursor = true;
@@ -277,7 +291,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 	}
 }
 
-void APacmanGameModeBase::OnPlayerNameCommit(const FText& PlayerName, ETextCommit::Type CommitMethod)
+void APacmanGameModeBase::SaveHiscoreName(const FText& PlayerName, ETextCommit::Type CommitMethod)
 {
 	if (CommitMethod != ETextCommit::OnEnter)
 	{
@@ -292,9 +306,9 @@ void APacmanGameModeBase::OnPlayerNameCommit(const FText& PlayerName, ETextCommi
 	NewHiscore->Entries.Add({ PlayerName, Pacman->GetScore() });
 	NewHiscore->Entries.StableSort(TGreater<FHiscoreEntry>());
 	const auto Size = NewHiscore->Entries.Num();
-	if (Size > 10)
+	if (Size > GNumHiscoreEntries)
 	{
-		NewHiscore->Entries.RemoveAt(Size - 1, Size - 10);
+		NewHiscore->Entries.RemoveAt(Size - 1, Size - GNumHiscoreEntries);
 	}
 	UGameplayStatics::SaveGameToSlot(NewHiscore, TEXT("Hiscore"), 0);
 
@@ -337,14 +351,14 @@ void APacmanGameModeBase::BeginNewGame()
 	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Level_01"));
 }
 
-void APacmanGameModeBase::ReturnToMainMenu()
-{
-	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Main"));
-}
-
 void APacmanGameModeBase::QuitGame()
 {
 	UKismetSystemLibrary::QuitGame(GetWorld(), nullptr, EQuitPreference::Quit, true);
+}
+
+void APacmanGameModeBase::ReturnToMainMenu()
+{
+	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Main"));
 }
 
 void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostPawn* InGhost)
@@ -362,7 +376,7 @@ void APacmanGameModeBase::NotifyGhostBeginOverlap(AActor* PacmanOrGhost, AGhostP
 		if (Pacman->Kill() == 0) // Pacman lost all lives.
 		{
 			UPacmanHiscore* LoadedHiscore = Cast<UPacmanHiscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Hiscore"), 0));
-			if (LoadedHiscore == nullptr || (LoadedHiscore && Pacman->GetScore() > LoadedHiscore->Entries.Last().Score) || (LoadedHiscore && LoadedHiscore->Entries.Num() < 10))
+			if (LoadedHiscore == nullptr || (LoadedHiscore && Pacman->GetScore() > LoadedHiscore->Entries.Last().Score) || (LoadedHiscore && LoadedHiscore->Entries.Num() < GNumHiscoreEntries))
 			{
 				GenericInfoWidget->Text->SetText(LOCTEXT("EnterName", "Type your name and press <Enter>"));
 				GenericInfoWidget->AddToViewport();
