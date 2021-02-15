@@ -86,8 +86,11 @@ void APacmanGameModeBase::BeginPlay()
 			}
 		}
 
-		PC->SetInputMode(FInputModeUIOnly());
-		PC->bShowMouseCursor = true;
+		if (PC)
+		{
+			PC->SetInputMode(FInputModeUIOnly());
+			PC->bShowMouseCursor = true;
+		}
 
 		GGameLevel = 0;
 		GPacmanScore = 0;
@@ -95,8 +98,11 @@ void APacmanGameModeBase::BeginPlay()
 	}
 	else
 	{
-		PC->SetInputMode(FInputModeGameOnly());
-		PC->bShowMouseCursor = false;
+		if (PC)
+		{
+			PC->SetInputMode(FInputModeGameOnly());
+			PC->bShowMouseCursor = false;
+		}
 
 		Pacman = CastChecked<APacmanPawn>(UGameplayStatics::GetActorOfClass(GetWorld(), APacmanPawn::StaticClass()));
 
@@ -114,7 +120,6 @@ void APacmanGameModeBase::BeginPlay()
 		check(HUDWidgetClass);
 		HUDWidget = CastChecked<UPacmanHUDWidget>(CreateWidget(GetWorld(), HUDWidgetClass));
 		HUDWidget->AddToViewport();
-
 		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), GPacmanScore));
 		HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), GPacmanNumLives));
 		HUDWidget->LevelText->SetText(FText::Format(LOCTEXT("Level", "Level: {0}"), GGameLevel));
@@ -366,9 +371,12 @@ void APacmanGameModeBase::PauseGame()
 	PauseMenuWidget->AddToViewport();
 
 	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	PC->SetInputMode(FInputModeUIOnly());
-	PC->SetPause(true);
-	PC->bShowMouseCursor = true;
+	if (PC)
+	{
+		PC->SetInputMode(FInputModeUIOnly());
+		PC->SetPause(true);
+		PC->bShowMouseCursor = true;
+	}
 }
 
 void APacmanGameModeBase::ResumeGame()
@@ -379,9 +387,12 @@ void APacmanGameModeBase::ResumeGame()
 	PauseMenuWidget->RemoveFromViewport();
 
 	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	PC->SetInputMode(FInputModeGameOnly());
-	PC->SetPause(false);
-	PC->bShowMouseCursor = false;
+	if (PC)
+	{
+		PC->SetInputMode(FInputModeGameOnly());
+		PC->SetPause(false);
+		PC->bShowMouseCursor = false;
+	}
 }
 
 uint32 APacmanGameModeBase::KillPacman()
@@ -437,8 +448,11 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 				GenericInfoWidget->PlayerName->SetFocus();
 
 				APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-				PC->SetInputMode(FInputModeUIOnly());
-				PC->bShowMouseCursor = true;
+				if (PC)
+				{
+					PC->SetInputMode(FInputModeUIOnly());
+					PC->bShowMouseCursor = true;
+				}
 			}
 			else
 			{
