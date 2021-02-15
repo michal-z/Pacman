@@ -40,16 +40,16 @@ APacmanGameModeBase::APacmanGameModeBase()
 		GenericInfoWidgetClass = Finder.Class;
 	}
 	{
+		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_HUD"));
+		HUDWidgetClass = Finder.Class;
+	}
+	{
 		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder(TEXT("/Game/Materials/M_GhostSuperFood"));
 		GhostFrightenedModeMaterial = Finder.Object;
 	}
 	{
 		static ConstructorHelpers::FObjectFinder<UMaterial> Finder(TEXT("/Game/Materials/M_TeleportBase"));
 		TeleportBaseMaterial = Finder.Object;
-	}
-	{
-		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_HUD"));
-		HUDWidgetClass = Finder.Class;
 	}
 	{
 		static ConstructorHelpers::FClassFinder<APacmanFood> Finder(TEXT("/Game/Blueprints/BP_SuperFood"));
@@ -411,12 +411,12 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 	APacmanFood* PacmanFood = Cast<APacmanFood>(Other);
 	AGhostPawn* GhostPawn = Cast<AGhostPawn>(Other);
 
-	if (PacmanPawn && PacmanFood)
+	if (PacmanPawn && PacmanFood) // Pacman - "Food" overlap.
 	{
 		GPacmanScore += PacmanFood->GetScore();
 		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), GPacmanScore));
-		PacmanFood->Destroy();
 
+		check(NumFoodLeft > 0);
 		if (--NumFoodLeft == 0)
 		{
 			CompleteLevel();
@@ -425,6 +425,7 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 		{
 			BeginFrightenedMode();
 		}
+		PacmanFood->Destroy();
 	}
 	else if (PacmanPawn && GhostPawn) // Pacman - Ghost overlap.
 	{
