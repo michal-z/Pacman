@@ -397,11 +397,11 @@ void APacmanGameModeBase::ResumeGame()
 
 uint32 APacmanGameModeBase::KillPacman()
 {
-	check(GPacmanNumLives > 0);
-
-	GPacmanNumLives -= 1;
-	HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), GPacmanNumLives));
-
+	if (GPacmanNumLives > 0)
+	{
+		GPacmanNumLives -= 1;
+		HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), GPacmanNumLives));
+	}
 	return GPacmanNumLives;
 }
 
@@ -411,12 +411,11 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 	APacmanFood* PacmanFood = Cast<APacmanFood>(Other);
 	AGhostPawn* GhostPawn = Cast<AGhostPawn>(Other);
 
-	if (PacmanPawn && PacmanFood) // Pacman - "Food" overlap.
+	if (PacmanPawn && PacmanFood && NumFoodLeft > 0) // Pacman - "Food" overlap.
 	{
 		GPacmanScore += PacmanFood->GetScore();
 		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), GPacmanScore));
 
-		check(NumFoodLeft > 0);
 		if (--NumFoodLeft == 0)
 		{
 			CompleteLevel();
@@ -425,6 +424,7 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 		{
 			BeginFrightenedMode();
 		}
+
 		PacmanFood->Destroy();
 	}
 	else if (PacmanPawn && GhostPawn) // Pacman - Ghost overlap.
