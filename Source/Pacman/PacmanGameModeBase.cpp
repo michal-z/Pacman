@@ -397,11 +397,13 @@ void APacmanGameModeBase::ResumeGame()
 
 uint32 APacmanGameModeBase::KillPacman()
 {
-	if (GPacmanNumLives > 0)
+	if (GPacmanNumLives == 0 || GPacmanNumLives == 1)
 	{
-		GPacmanNumLives -= 1;
-		HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), GPacmanNumLives));
+		return GPacmanNumLives = 0;
 	}
+
+	GPacmanNumLives -= 1;
+	HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), GPacmanNumLives));
 	return GPacmanNumLives;
 }
 
