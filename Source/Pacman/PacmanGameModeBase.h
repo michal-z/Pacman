@@ -10,6 +10,7 @@ class UPacmanHUDWidget;
 class APacmanPawn;
 class APacmanFood;
 class AGhostPawn;
+class UNiagaraSystem;
 
 UCLASS()
 class PACMAN_API APacmanGameModeBase : public AGameModeBase
@@ -24,6 +25,7 @@ public:
 	UMaterialInstance* GetGhostFrightenedModeMaterial() const;
 
 private:
+	UNiagaraSystem* SuperFoodFX;
 	UMaterial* TeleportBaseMaterial;
 	APacmanPawn* Pacman;
 	TArray<AGhostPawn*> Ghosts;

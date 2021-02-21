@@ -9,6 +9,8 @@
 #include "Components/VerticalBox.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Blueprint/UserWidget.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
 
@@ -53,6 +55,10 @@ APacmanGameModeBase::APacmanGameModeBase()
 	{
 		static ConstructorHelpers::FClassFinder<APacmanFood> Finder(TEXT("/Game/Blueprints/BP_SuperFood"));
 		SuperFoodClass = Finder.Class;
+	}
+	{
+		static ConstructorHelpers::FObjectFinder<UNiagaraSystem> Finder(TEXT("/Game/FX/NS_SuperFood"));
+		SuperFoodFX = Finder.Object;
 	}
 }
 
@@ -420,6 +426,7 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 		else if (PacmanFood->IsA(SuperFoodClass))
 		{
 			BeginFrightenedMode();
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, SuperFoodFX, PacmanFood->GetActorLocation());
 		}
 
 		PacmanFood->Destroy();
@@ -428,6 +435,7 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 	{
 		if (FrightenedModeTimer > 0.0f && GhostPawn->IsFrightened())
 		{
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, SuperFoodFX, GhostPawn->GetActorLocation());
 			GhostPawn->MoveToGhostHouse();
 			GhostPawn->FrozenModeTimer = 5.0f;
 			GPacmanScore += 100;
