@@ -261,22 +261,20 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			}
 			const FVector GhostLocationSnapped = GhostLocation.GridSnap(GMapTileSize / 2);
 
-			const float Speed = GMapTileSize / 2;
-			const FVector Destinations[4] =
+			const FVector Directions[] =
 			{
-				GhostLocationSnapped + GhostDirection * Speed,
-				GhostLocationSnapped + FVector(GhostDirection.Y, GhostDirection.X, 0.0f) * Speed,
-				GhostLocationSnapped + FVector(-GhostDirection.Y, -GhostDirection.X, 0.0f) * Speed,
-				GhostLocationSnapped + FVector(-GhostDirection.X, -GhostDirection.Y, 0.0f) * Speed,
+				GhostDirection,
+				FVector(GhostDirection.Y, GhostDirection.X, 0.0f),
+				FVector(-GhostDirection.Y, -GhostDirection.X, 0.0f),
+				FVector(-GhostDirection.X, -GhostDirection.Y, 0.0f),
 			};
 			float Distances[4] = {};
 			bool bIsBlocked[4] = {};
 
 			for (uint32 Idx = 0; Idx < 4; ++Idx)
 			{
-				bIsBlocked[Idx] = World->SweepTestByChannel(GhostLocationSnapped, Destinations[Idx], FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
-
-				Distances[Idx] = FVector::Distance(Destinations[Idx], TargetLocation);
+				bIsBlocked[Idx] = World->SweepTestByChannel(GhostLocationSnapped, GhostLocationSnapped + Directions[Idx], FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
+				Distances[Idx] = FVector::Distance(GhostLocationSnapped + Directions[Idx], TargetLocation);
 			}
 
 			int32 SelectedDirection = -1;
@@ -313,30 +311,8 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 				}
 			}
 
-			FVector WantedDirection = {};
-
-			if (SelectedDirection == 0)
-			{
-				WantedDirection = GhostDirection;
-			}
-			else if (SelectedDirection == 1)
-			{
-				WantedDirection = FVector(GhostDirection.Y, GhostDirection.X, 0.0f);
-			}
-			else if (SelectedDirection == 2)
-			{
-				WantedDirection = FVector(-GhostDirection.Y, -GhostDirection.X, 0.0f);
-			}
-			else if (SelectedDirection == 3)
-			{
-				WantedDirection = FVector(-GhostDirection.X, -GhostDirection.Y, 0.0f);
-			}
-			else
-			{
-				check(false);
-			}
-
-			Ghost->CurrentDirection = WantedDirection;
+			check(SelectedDirection >= 0 && SelectedDirection < _countof(Directions));
+			Ghost->CurrentDirection = Directions[SelectedDirection];
 		}
 	}
 
