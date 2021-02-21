@@ -80,7 +80,7 @@ void APacmanGameModeBase::BeginPlay()
 			for (const FHiscoreEntry& Entry : LoadedHiscore->Entries)
 			{
 				const auto Text = FText::FormatNamed(FText::FromString(TEXT("{PlayerName}: {Score}")), TEXT("PlayerName"), Entry.Name, TEXT("Score"), FText::AsNumber(Entry.Score));
-				auto Widget = NewObject<UTextBlock>(this, UTextBlock::StaticClass());
+				auto Widget = NewObject<UTextBlock>(this);
 				Widget->SetText(Text);
 				MainMenuWidget->HiscoreBox->AddChildToVerticalBox(Widget);
 			}
@@ -259,20 +259,22 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			{
 				TargetLocation = Ghost->GetScatterTargetLocation();
 			}
+			const FVector GhostLocationSnapped = GhostLocation.GridSnap(GMapTileSize / 2);
 
-			const float Speed = DeltaTime * Ghost->GetSpeed();
-			const FVector Destinations[3] =
+			const float Speed = GMapTileSize / 2;
+			const FVector Destinations[4] =
 			{
-				GhostLocation + GhostDirection * Speed,
-				GhostLocation + FVector(GhostDirection.Y, GhostDirection.X, 0.0f) * Speed,
-				GhostLocation + FVector(-GhostDirection.Y, -GhostDirection.X, 0.0f) * Speed,
+				GhostLocationSnapped + GhostDirection * Speed,
+				GhostLocationSnapped + FVector(GhostDirection.Y, GhostDirection.X, 0.0f) * Speed,
+				GhostLocationSnapped + FVector(-GhostDirection.Y, -GhostDirection.X, 0.0f) * Speed,
+				GhostLocationSnapped + FVector(-GhostDirection.X, -GhostDirection.Y, 0.0f) * Speed,
 			};
-			float Distances[3] = {};
-			bool bIsBlocked[3] = {};
+			float Distances[4] = {};
+			bool bIsBlocked[4] = {};
 
-			for (uint32 Idx = 0; Idx < 3; ++Idx)
+			for (uint32 Idx = 0; Idx < 4; ++Idx)
 			{
-				bIsBlocked[Idx] = World->SweepTestByChannel(GhostLocation, Destinations[Idx], FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
+				bIsBlocked[Idx] = World->SweepTestByChannel(GhostLocationSnapped, Destinations[Idx], FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
 
 				Distances[Idx] = FVector::Distance(Destinations[Idx], TargetLocation);
 			}
@@ -301,9 +303,17 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 						SelectedDirection = (int32)Idx;
 					}
 				}
+				// At the beginning of 'Frightened Mode' ghosts can choose backward direction.
+				if (FrightenedModeTimer > (GFrightenedModeDuration - 0.5f))
+				{
+					if (bIsBlocked[3] == false && Distances[3] > MaxDistance)
+					{
+						SelectedDirection = 3;
+					}
+				}
 			}
 
-			FVector WantedDirection;
+			FVector WantedDirection = {};
 
 			if (SelectedDirection == 0)
 			{
@@ -317,11 +327,13 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			{
 				WantedDirection = FVector(-GhostDirection.Y, -GhostDirection.X, 0.0f);
 			}
+			else if (SelectedDirection == 3)
+			{
+				WantedDirection = FVector(-GhostDirection.X, -GhostDirection.Y, 0.0f);
+			}
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("PacmanGameModeBase: All paths blocked!"));
-				WantedDirection = GhostDirection;
-				DirectionUpdateTimer = 1.0f;
+				check(false);
 			}
 
 			Ghost->CurrentDirection = WantedDirection;
@@ -346,7 +358,14 @@ void APacmanGameModeBase::SaveHiscoreName(const FText& PlayerName, ETextCommit::
 	{
 		NewHiscore->Entries = LoadedHiscore->Entries;
 	}
-	NewHiscore->Entries.Add({ PlayerName, GPacmanScore });
+	if (PlayerName.IsEmptyOrWhitespace())
+	{
+		NewHiscore->Entries.Add({ LOCTEXT("EmptyName", "Unnamed"), GPacmanScore });
+	}
+	else
+	{
+		NewHiscore->Entries.Add({ PlayerName, GPacmanScore });
+	}
 	NewHiscore->Entries.StableSort(TGreater<FHiscoreEntry>());
 	const auto Size = NewHiscore->Entries.Num();
 	if (Size > GNumHiscoreEntries)
@@ -524,6 +543,7 @@ void APacmanGameModeBase::CompleteLevel()
 void APacmanGameModeBase::BeginFrightenedMode()
 {
 	FrightenedModeTimer = GFrightenedModeDuration;
+	DirectionUpdateTimer = 10000.0f; // Ghosts will change direction immediately.
 
 	for (AGhostPawn* Ghost : Ghosts)
 	{
