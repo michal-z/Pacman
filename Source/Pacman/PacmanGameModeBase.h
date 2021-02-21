@@ -2,6 +2,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "PacmanGameModeBase.generated.h"
 
+constexpr float GMapTileSize = 100.0f;
+
 class UGenericInfoWidget;
 class UMainMenuWidget;
 class UPacmanHUDWidget;
@@ -28,8 +30,9 @@ private:
 	UMaterialInstance* GhostFrightenedModeMaterial;
 	float FrightenedModeTimer;
 	float DirectionUpdateTimer;
-	// Odd GhostModeIndex is Scatter mode. Even GhostModeIndex is Chase mode.
-	static constexpr float GhostModeDurations[] = { 7.0f, 20.0f, 5.0f, 20.0f, 3.0f };
+	// Even GhostModeIndex is Scatter mode. Odd GhostModeIndex is Chase mode.
+	//static constexpr float GhostModeDurations[] = { 7.0f, 20.0f, 5.0f, 20.0f, 3.0f };
+	static constexpr float GhostModeDurations[] = { 15.0f, 30.0f, 15.0f, 30.0f, 10.0f };
 	float GhostModeTimer;
 	uint32 GhostModeIndex;
 	uint32 NumFoodLeft;

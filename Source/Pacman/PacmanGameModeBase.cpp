@@ -14,7 +14,6 @@ PRAGMA_DISABLE_OPTIMIZATION
 
 #define LOCTEXT_NAMESPACE "PacmanGameModeBase"
 
-static constexpr float GMapTileSize = 100.0f;
 static constexpr float GFrightenedModeDuration = 5.0f;
 static constexpr int32 GNumHiscoreEntries = 4;
 
@@ -114,6 +113,7 @@ void APacmanGameModeBase::BeginPlay()
 			Ghosts.Add(CastChecked<AGhostPawn>(Actor));
 		}
 
+		DirectionUpdateTimer = 10000.0f;
 		GhostModeTimer = GhostModeDurations[GhostModeIndex];
 		GGameLevel += 1;
 
@@ -489,7 +489,7 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 
 			GhostModeIndex = 0;
 			GhostModeTimer = GhostModeDurations[GhostModeIndex];
-			DirectionUpdateTimer = 0.0f;
+			DirectionUpdateTimer = 10000.0f;
 			FrightenedModeTimer = 0.0f;
 		}
 	}
