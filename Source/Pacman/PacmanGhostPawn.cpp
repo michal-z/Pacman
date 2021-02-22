@@ -77,7 +77,7 @@ void AGhostPawn::NotifyActorBeginOverlap(AActor* OtherActor)
 	if (bIsInHouse == false)
 	{
 		APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-		if (GameMode)
+		if (GameMode && OtherActor)
 		{
 			GameMode->HandleActorOverlap(OtherActor, this);
 		}
