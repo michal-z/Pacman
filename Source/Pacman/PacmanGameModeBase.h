@@ -20,6 +20,7 @@ public:
 	UFUNCTION() void SaveHiscoreName(const FText& InText, ETextCommit::Type CommitMethod);
 	UFUNCTION() void ResumeGame();
 	void PauseGame();
+	void RandomEscape();
 	void HandleActorOverlap(AActor* PacmanOrGhost, AActor* Other);
 	UMaterial* GetTeleportBaseMaterial() const;
 	UMaterialInstance* GetGhostFrightenedModeMaterial() const;

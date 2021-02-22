@@ -547,6 +547,66 @@ void APacmanGameModeBase::ShowGetReadyInfoWidget()
 		2.0f, false);
 }
 
+void APacmanGameModeBase::RandomEscape()
+{
+	if (GGameLevel == 0 || GenericInfoWidget->IsInViewport() || Teleport.Material)
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	FVector RandomLocation = {};
+	for (;;)
+	{
+		RandomLocation = { FMath::RandRange(0, 19) * 100.0f - 950.0f, FMath::RandRange(0, 19) * 100.0f - 950.0f, 50.0f };
+		bool bIsBlocked = World->SweepTestByChannel(RandomLocation + FVector(0.0f, 0.0f, 200.f), RandomLocation + FVector(0.0f, 0.0f, 60.0f), FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(49.0f));
+		for (AGhostPawn* Ghost : Ghosts)
+		{
+			if ((Ghost->GetHouseLocation() - RandomLocation).IsNearlyZero(1.5f))
+			{
+				bIsBlocked = true;
+				break;
+			}
+		}
+		if ((Ghosts[0]->GetHouseLocation() - (RandomLocation + FVector(-100.0f, 0.0f, 0.0f))).IsNearlyZero(1.5f))
+		{
+			bIsBlocked = true;
+		}
+		if ((Ghosts[0]->GetHouseLocation() - (RandomLocation + FVector(100.0f, 0.0f, 0.0f))).IsNearlyZero(1.5f))
+		{
+			bIsBlocked = true;
+		}
+		if (FVector::Distance(RandomLocation, Pacman->GetActorLocation().GridSnap(50.0f)) < 200.0f)
+		{
+			bIsBlocked = true;
+		}
+		if (!bIsBlocked)
+		{
+			break;
+		}
+	}
+
+	Pacman->SelectRandomDirection(RandomLocation);
+	Pacman->SetTeleportMaterial();
+	Teleport =
+	{
+		Pacman->GetTeleportMaterial(), 1.0f, -1.0f,
+		[this, RandomLocation]()
+		{
+			Pacman->SetActorLocation(RandomLocation, false, nullptr, ETeleportType::ResetPhysics);
+		},
+		[this]()
+		{
+			Pacman->SetDefaultMaterial();
+		}
+	};
+}
+
 
 #include "Modules/ModuleManager.h"
 IMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, Pacman, "Pacman");

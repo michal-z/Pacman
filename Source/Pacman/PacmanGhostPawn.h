@@ -29,6 +29,7 @@ public:
 	float GetRadius() const;
 	EGhostColor GetColor() const;
 	FVector GetScatterTargetLocation() const;
+	FVector GetHouseLocation() const;
 	float GetSpeed() const;
 	bool IsFrightened() const;
 
@@ -66,6 +67,11 @@ FORCEINLINE EGhostColor AGhostPawn::GetColor() const
 FORCEINLINE FVector AGhostPawn::GetScatterTargetLocation() const
 {
 	return ScatterTargetLocation;
+}
+
+FORCEINLINE FVector AGhostPawn::GetHouseLocation() const
+{
+	return HouseLocation;
 }
 
 FORCEINLINE float AGhostPawn::GetSpeed() const

@@ -102,6 +102,7 @@ void APacmanPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	APacmanGameModeBase* GameMode = CastChecked<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 	PlayerInputComponent->BindAction(TEXT("PauseGame"), IE_Pressed, GameMode, &APacmanGameModeBase::PauseGame);
+	PlayerInputComponent->BindAction(TEXT("RandomEscape"), IE_Pressed, GameMode, &APacmanGameModeBase::RandomEscape);
 }
 
 UPawnMovementComponent* APacmanPawn::GetMovementComponent() const
@@ -157,6 +158,37 @@ void APacmanPawn::MoveToStartLocation()
 	APacmanPawn* CDO = StaticClass()->GetDefaultObject<APacmanPawn>();
 	CurrentDirection = CDO->CurrentDirection;
 	WantedDirection = CDO->WantedDirection;
+}
+
+void APacmanPawn::SelectRandomDirection(const FVector& Location)
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+	const float Radius = CollisionComponent->GetScaledSphereRadius();
+
+	const FVector Directions[] =
+	{
+		FVector(1.0f, 0.0f, 0.0f), FVector(-1.0f, 0.0f, 0.0f), FVector(0.0f, 1.0f, 0.0f), FVector(0.0f, -1.0f, 0.0f)
+	};
+	bool bIsBlocked[4] = {};
+	for (uint32 Idx = 0; Idx < 4; ++Idx)
+	{
+		bIsBlocked[Idx] = World->SweepTestByChannel(Location, Location + (GMapTileSize / 2) * Directions[Idx], FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
+	}
+	int32 SelectedDirection = 0;
+	for (;;)
+	{
+		SelectedDirection = FMath::RandRange(0, 3);
+		if (!bIsBlocked[SelectedDirection])
+		{
+			break;
+		}
+	}
+	WantedDirection = Directions[SelectedDirection];
+	CurrentDirection = WantedDirection;
 }
 
 #undef LOCTEXT_NAMESPACE

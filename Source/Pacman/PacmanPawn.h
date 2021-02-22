@@ -16,6 +16,7 @@ public:
 	void SetTeleportMaterial();
 	FVector GetCurrentDirection() const;
 	UMaterialInstanceDynamic* GetTeleportMaterial() const;
+	void SelectRandomDirection(const FVector& Location);
 
 private:
 	UMaterialInterface* DefaultMaterial;
