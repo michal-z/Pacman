@@ -87,7 +87,11 @@ void APacmanGameModeBase::BeginPlay()
 		{
 			for (const FHiscoreEntry& Entry : LoadedHiscore->Entries)
 			{
-				const auto Text = FText::FormatNamed(FText::FromString(TEXT("{PlayerName}: {Score}")), TEXT("PlayerName"), Entry.Name, TEXT("Score"), FText::AsNumber(Entry.Score));
+				const auto Text = FText::FormatNamed(
+					FText::FromString(TEXT("{PlayerName}: {Score}")),
+					TEXT("PlayerName"), Entry.Name,
+					TEXT("Score"), FText::AsNumber(Entry.Score));
+
 				auto Widget = NewObject<UTextBlock>(this);
 				Widget->SetText(Text);
 				MainMenuWidget->HiscoreBox->AddChildToVerticalBox(Widget);
@@ -456,7 +460,9 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 		if (KillPacman() == 0) // Pacman lost all lives.
 		{
 			UPacmanHiscore* LoadedHiscore = Cast<UPacmanHiscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Hiscore"), 0));
-			if (LoadedHiscore == nullptr || (LoadedHiscore && GPacmanScore > LoadedHiscore->Entries.Last().Score) || (LoadedHiscore && LoadedHiscore->Entries.Num() < GNumHiscoreEntries))
+			if (LoadedHiscore == nullptr
+				|| (LoadedHiscore && GPacmanScore > LoadedHiscore->Entries.Last().Score)
+				|| (LoadedHiscore && LoadedHiscore->Entries.Num() < GNumHiscoreEntries))
 			{
 				GenericInfoWidget->Text->SetText(LOCTEXT("EnterName", "Type your name and press <Enter>"));
 				GenericInfoWidget->AddToViewport();
