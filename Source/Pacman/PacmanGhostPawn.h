@@ -26,7 +26,6 @@ public:
 	void EnableFrightenedMode();
 	void DisableFrightenedMode();
 	void Move(float DeltaTime);
-	float GetRadius() const;
 	EGhostColor GetColor() const;
 	FVector GetScatterTargetLocation() const;
 	FVector GetHouseLocation() const;

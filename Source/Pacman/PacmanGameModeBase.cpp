@@ -226,7 +226,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 
 		for (AGhostPawn* Ghost : Ghosts)
 		{
-			const float Radius = Ghost->GetRadius();
+			const float Radius = GMapTileSize / 2 - 1.0f;
 			const FVector GhostLocation = Ghost->GetActorLocation();
 			const FVector GhostDirection = Ghost->CurrentDirection;
 

@@ -12,7 +12,7 @@ AGhostPawn::AGhostPawn()
 	PrimaryActorTick.bCanEverTick = false;
 
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
-	CollisionComponent->InitSphereRadius(49.0f);
+	CollisionComponent->InitSphereRadius(GMapTileSize / 2 - 1.0f);
 	CollisionComponent->SetCollisionObjectType(ECC_WorldDynamic);
 	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 	CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
@@ -94,11 +94,6 @@ void AGhostPawn::MoveToGhostHouse()
 	bIsInHouse = true;
 	bIsFrightened = false;
 	FrozenModeTimer = LeaveHouseTime;
-}
-
-float AGhostPawn::GetRadius() const
-{
-	return CollisionComponent->GetScaledSphereRadius();
 }
 
 void AGhostPawn::Move(float DeltaTime)
