@@ -18,6 +18,8 @@ PRAGMA_DISABLE_OPTIMIZATION
 
 static constexpr float GFrightenedModeDuration = 5.0f;
 static constexpr int32 GNumHiscoreEntries = 4;
+static constexpr int32 GMapTileNumX = 20;
+static constexpr int32 GMapTileNumY = 20;
 
 static uint32 GPacmanNumLives;
 static uint32 GPacmanScore;
@@ -564,8 +566,16 @@ void APacmanGameModeBase::RandomEscape()
 	FVector RandomLocation = {};
 	for (;;)
 	{
-		RandomLocation = { FMath::RandRange(0, 19) * 100.0f - 950.0f, FMath::RandRange(0, 19) * 100.0f - 950.0f, 50.0f };
-		bool bIsBlocked = World->SweepTestByChannel(RandomLocation + FVector(0.0f, 0.0f, 200.f), RandomLocation + FVector(0.0f, 0.0f, 60.0f), FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(49.0f));
+		RandomLocation;
+		RandomLocation.X = FMath::RandRange(0, GMapTileNumX - 1) * GMapTileSize - ((GMapTileSize * GMapTileNumX) / 2) - GMapTileSize / 2;
+		RandomLocation.Y = FMath::RandRange(0, GMapTileNumY - 1) * GMapTileSize - ((GMapTileSize * GMapTileNumY) / 2) - GMapTileSize / 2;
+		RandomLocation.Z = GMapTileSize / 2;
+
+		bool bIsBlocked = World->SweepTestByChannel(
+			RandomLocation + FVector(0.0f, 0.0f, GMapTileSize * 2),
+			RandomLocation + FVector(0.0f, 0.0f, GMapTileSize / 2 + 10.0f),
+			FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(GMapTileSize / 2 - 1.0f));
+
 		for (AGhostPawn* Ghost : Ghosts)
 		{
 			if ((Ghost->GetHouseLocation() - RandomLocation).IsNearlyZero(1.5f))
@@ -574,15 +584,15 @@ void APacmanGameModeBase::RandomEscape()
 				break;
 			}
 		}
-		if ((Ghosts[(int32)EGhostColor::Red]->GetHouseLocation() - (RandomLocation + FVector(-100.0f, 0.0f, 0.0f))).IsNearlyZero(1.5f))
+		if ((Ghosts[(int32)EGhostColor::Red]->GetHouseLocation() - (RandomLocation + FVector(-GMapTileSize, 0.0f, 0.0f))).IsNearlyZero(1.5f))
 		{
 			bIsBlocked = true;
 		}
-		if ((Ghosts[(int32)EGhostColor::Red]->GetHouseLocation() - (RandomLocation + FVector(100.0f, 0.0f, 0.0f))).IsNearlyZero(1.5f))
+		if ((Ghosts[(int32)EGhostColor::Red]->GetHouseLocation() - (RandomLocation + FVector(GMapTileSize, 0.0f, 0.0f))).IsNearlyZero(1.5f))
 		{
 			bIsBlocked = true;
 		}
-		if (FVector::Distance(RandomLocation, Pacman->GetActorLocation().GridSnap(50.0f)) < 200.0f)
+		if (FVector::Distance(RandomLocation, Pacman->GetActorLocation().GridSnap(GMapTileSize / 2)) < 200.0f)
 		{
 			bIsBlocked = true;
 		}
