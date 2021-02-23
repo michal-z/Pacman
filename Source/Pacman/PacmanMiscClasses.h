@@ -62,6 +62,7 @@ public:
 	UPROPERTY(meta = (BindWidget)) UTextBlock* ScoreText;
 	UPROPERTY(meta = (BindWidget)) UTextBlock* LivesText;
 	UPROPERTY(meta = (BindWidget)) UTextBlock* LevelText;
+	UPROPERTY(meta = (BindWidget)) UTextBlock* RandomTeleportsText;
 	UPROPERTY(meta = (BindWidget)) UTextBlock* HiscoreText;
 
 	GENERATED_BODY()

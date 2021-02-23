@@ -23,6 +23,7 @@ static constexpr int32 GMapTileNumY = 20;
 
 static uint32 GPacmanNumLives;
 static uint32 GPacmanScore;
+static uint32 GPacmanNumRandomTeleports;
 static uint32 GGameLevel;
 
 APacmanGameModeBase::APacmanGameModeBase()
@@ -102,6 +103,7 @@ void APacmanGameModeBase::BeginPlay()
 		GGameLevel = 0;
 		GPacmanScore = 0;
 		GPacmanNumLives = 3;
+		GPacmanNumRandomTeleports = 2;
 	}
 	else
 	{
@@ -131,6 +133,7 @@ void APacmanGameModeBase::BeginPlay()
 		HUDWidget->AddToViewport();
 		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), GPacmanScore));
 		HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), GPacmanNumLives));
+		HUDWidget->RandomTeleportsText->SetText(FText::Format(LOCTEXT("RandomTeleports", "Teleports: {0}"), GPacmanNumRandomTeleports));
 		HUDWidget->LevelText->SetText(FText::Format(LOCTEXT("Level", "Level: {0}"), GGameLevel));
 
 		UPacmanHiscore* LoadedHiscore = Cast<UPacmanHiscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Hiscore"), 0));
@@ -550,9 +553,9 @@ void APacmanGameModeBase::ShowGetReadyInfoWidget()
 		2.0f, false);
 }
 
-void APacmanGameModeBase::RandomEscape()
+void APacmanGameModeBase::DoRandomTeleport()
 {
-	if (GGameLevel == 0 || GenericInfoWidget->IsInViewport() || Teleport.Material)
+	if (GPacmanNumRandomTeleports == 0 || GGameLevel == 0 || GenericInfoWidget->IsInViewport() || Teleport.Material)
 	{
 		return;
 	}
@@ -562,6 +565,9 @@ void APacmanGameModeBase::RandomEscape()
 	{
 		return;
 	}
+
+	GPacmanNumRandomTeleports -= 1;
+	HUDWidget->RandomTeleportsText->SetText(FText::Format(LOCTEXT("RandomTeleports", "Teleports: {0}"), GPacmanNumRandomTeleports));
 
 	FVector RandomLocation = {};
 	for (;;)

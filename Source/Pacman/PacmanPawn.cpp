@@ -102,7 +102,7 @@ void APacmanPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	APacmanGameModeBase* GameMode = CastChecked<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 	PlayerInputComponent->BindAction(TEXT("PauseGame"), IE_Pressed, GameMode, &APacmanGameModeBase::PauseGame);
-	PlayerInputComponent->BindAction(TEXT("RandomEscape"), IE_Pressed, GameMode, &APacmanGameModeBase::RandomEscape);
+	PlayerInputComponent->BindAction(TEXT("RandomTeleport"), IE_Pressed, GameMode, &APacmanGameModeBase::DoRandomTeleport);
 }
 
 UPawnMovementComponent* APacmanPawn::GetMovementComponent() const
