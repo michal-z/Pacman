@@ -285,7 +285,11 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 
 			for (uint32 Idx = 0; Idx < 4; ++Idx)
 			{
-				bIsBlocked[Idx] = World->SweepTestByChannel(GhostLocationSnapped, GhostLocationSnapped + (GMapTileSize / 2) * Directions[Idx], FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
+				bIsBlocked[Idx] = World->SweepTestByChannel(
+					GhostLocationSnapped,
+					GhostLocationSnapped + (GMapTileSize / 2) * Directions[Idx],
+					FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
+
 				Distances[Idx] = FVector::Distance(GhostLocationSnapped + (GMapTileSize / 2) * Directions[Idx], TargetLocation);
 			}
 
