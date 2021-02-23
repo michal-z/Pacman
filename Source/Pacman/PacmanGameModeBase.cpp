@@ -482,7 +482,6 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 		else
 		{
 			Pacman->SetTeleportMaterial();
-
 			Teleport =
 			{
 				Pacman->GetTeleportMaterial(), 1.0f, -1.0f,
