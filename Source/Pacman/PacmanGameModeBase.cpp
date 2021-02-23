@@ -118,6 +118,7 @@ void APacmanGameModeBase::BeginPlay()
 		{
 			Ghosts.Add(CastChecked<AGhostPawn>(Actor));
 		}
+		Ghosts.StableSort([](const AGhostPawn& G0, const AGhostPawn& G1) { return (int32)G0.GetColor() < (int32)G1.GetColor(); });
 
 		DirectionUpdateTimer = 10000.0f;
 		GhostModeTimer = GhostModeDurations[GhostModeIndex];
@@ -573,11 +574,11 @@ void APacmanGameModeBase::RandomEscape()
 				break;
 			}
 		}
-		if ((Ghosts[0]->GetHouseLocation() - (RandomLocation + FVector(-100.0f, 0.0f, 0.0f))).IsNearlyZero(1.5f))
+		if ((Ghosts[(int32)EGhostColor::Red]->GetHouseLocation() - (RandomLocation + FVector(-100.0f, 0.0f, 0.0f))).IsNearlyZero(1.5f))
 		{
 			bIsBlocked = true;
 		}
-		if ((Ghosts[0]->GetHouseLocation() - (RandomLocation + FVector(100.0f, 0.0f, 0.0f))).IsNearlyZero(1.5f))
+		if ((Ghosts[(int32)EGhostColor::Red]->GetHouseLocation() - (RandomLocation + FVector(100.0f, 0.0f, 0.0f))).IsNearlyZero(1.5f))
 		{
 			bIsBlocked = true;
 		}
