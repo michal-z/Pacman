@@ -19,7 +19,7 @@ PRAGMA_DISABLE_OPTIMIZATION
 static constexpr float GFrightenedModeDuration = 5.0f;
 static constexpr float GPowerUpPeriod = 30.0f;
 static constexpr float GPowerUpLiveDuration = 5.0f;
-static constexpr int32 GNumHiscoreEntries = 4;
+static constexpr int32 GNumHiscoreEntries = 9;
 static constexpr int32 GMapTileNumX = 20;
 static constexpr int32 GMapTileNumY = 20;
 
@@ -89,16 +89,19 @@ void APacmanGameModeBase::BeginPlay()
 		MainMenuWidget->AddToViewport();
 
 		UPacmanHiscore* LoadedHiscore = Cast<UPacmanHiscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Hiscore"), 0));
-		if (LoadedHiscore)
+		for (uint32 SlotIdx = 0; SlotIdx < GNumHiscoreEntries; ++SlotIdx)
 		{
-			for (const FHiscoreEntry& Entry : LoadedHiscore->Entries)
+			auto Widget = NewObject<UTextBlock>(this);
+			if (LoadedHiscore && LoadedHiscore->Entries.IsValidIndex(SlotIdx))
 			{
-				const auto Text = FText::FormatNamed(
-					FText::FromString(TEXT("{PlayerName}: {Score}")),
-					TEXT("PlayerName"), Entry.Name,
-					TEXT("Score"), FText::AsNumber(Entry.Score));
-
-				auto Widget = NewObject<UTextBlock>(this);
+				const auto& Entry = LoadedHiscore->Entries[SlotIdx];
+				const auto Text = FText::Format(FText::FromString(TEXT("{0}. {1}: {2}")), SlotIdx + 1, Entry.Name, FText::AsNumber(Entry.Score));
+				Widget->SetText(Text);
+				MainMenuWidget->HiscoreBox->AddChildToVerticalBox(Widget);
+			}
+			else
+			{
+				const auto Text = FText::Format(FText::FromString(TEXT("{0}. --- Empty Slot ---")), SlotIdx + 1);
 				Widget->SetText(Text);
 				MainMenuWidget->HiscoreBox->AddChildToVerticalBox(Widget);
 			}
@@ -148,7 +151,7 @@ void APacmanGameModeBase::BeginPlay()
 		HUDWidget->LevelText->SetText(FText::Format(LOCTEXT("Level", "Level: {0}"), GGameLevel));
 
 		UPacmanHiscore* LoadedHiscore = Cast<UPacmanHiscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Hiscore"), 0));
-		if (LoadedHiscore)
+		if (LoadedHiscore && LoadedHiscore->Entries.Num() == GNumHiscoreEntries)
 		{
 			HUDWidget->HiscoreText->SetText(FText::Format(LOCTEXT("Hiscore", "Hiscore: {0}"), LoadedHiscore->Entries.Last().Score));
 		}
