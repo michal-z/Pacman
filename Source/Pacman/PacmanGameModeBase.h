@@ -7,10 +7,11 @@ constexpr float GMapTileSize = 100.0f;
 class UGenericInfoWidget;
 class UMainMenuWidget;
 class UPacmanHUDWidget;
+class UNiagaraSystem;
 class APacmanPawn;
 class APacmanFood;
 class AGhostPawn;
-class UNiagaraSystem;
+class APowerUpTrigger;
 
 UCLASS()
 class PACMAN_API APacmanGameModeBase : public AGameModeBase
@@ -27,10 +28,14 @@ public:
 
 private:
 	UNiagaraSystem* SuperFoodFX;
+	UNiagaraSystem* PowerUpFX;
 	UMaterial* TeleportBaseMaterial;
 	APacmanPawn* Pacman;
 	TArray<AGhostPawn*> Ghosts;
+	APowerUpTrigger* CurrentPowerUp;
+	FVector CurrentPowerUpLocation;
 	UMaterialInstance* GhostFrightenedModeMaterial;
+	float PowerUpTimer;
 	float FrightenedModeTimer;
 	float DirectionUpdateTimer;
 	// Even GhostModeIndex is Scatter mode. Odd GhostModeIndex is Chase mode.
@@ -63,6 +68,7 @@ private:
 	uint32 KillPacman();
 	void CompleteLevel();
 	void BeginFrightenedMode();
+	FVector SelectRandomLocationOnMap(UWorld* World, const FVector& CurrentLocation);
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;

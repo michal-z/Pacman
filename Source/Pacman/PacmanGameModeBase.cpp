@@ -17,6 +17,7 @@ PRAGMA_DISABLE_OPTIMIZATION
 #define LOCTEXT_NAMESPACE "PacmanGameModeBase"
 
 static constexpr float GFrightenedModeDuration = 5.0f;
+static constexpr float GPowerUpPeriod = 5.0f;
 static constexpr int32 GNumHiscoreEntries = 4;
 static constexpr int32 GMapTileNumX = 20;
 static constexpr int32 GMapTileNumY = 20;
@@ -62,6 +63,10 @@ APacmanGameModeBase::APacmanGameModeBase()
 	{
 		static ConstructorHelpers::FObjectFinder<UNiagaraSystem> Finder(TEXT("/Game/FX/NS_SuperFood"));
 		SuperFoodFX = Finder.Object;
+	}
+	{
+		static ConstructorHelpers::FObjectFinder<UNiagaraSystem> Finder(TEXT("/Game/FX/NS_PowerUp"));
+		PowerUpFX = Finder.Object;
 	}
 }
 
@@ -129,6 +134,7 @@ void APacmanGameModeBase::BeginPlay()
 		Ghosts.StableSort([](const AGhostPawn& G0, const AGhostPawn& G1) { return (int32)G0.GetColor() < (int32)G1.GetColor(); });
 
 		DirectionUpdateTimer = 10000.0f;
+		PowerUpTimer = GPowerUpPeriod;
 		GhostModeTimer = GhostModeDurations[GhostModeIndex];
 		GGameLevel += 1;
 
@@ -181,6 +187,28 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 	}
 	else if (GGameLevel > 0 && !GenericInfoWidget->IsInViewport())
 	{
+		if (PowerUpTimer > 0.0f)
+		{
+			PowerUpTimer -= DeltaTime;
+			if (PowerUpTimer < 0.0f)
+			{
+				PowerUpTimer = GPowerUpPeriod;
+				if (CurrentPowerUp)
+				{
+					CurrentPowerUp->Destroy();
+					CurrentPowerUp = nullptr;
+				}
+				UWorld* World = GetWorld();
+				if (World)
+				{
+					const FVector RandomLocation = SelectRandomLocationOnMap(World, CurrentPowerUpLocation);
+					CurrentPowerUp = World->SpawnActor<APowerUpTrigger>(RandomLocation, FRotator::ZeroRotator);
+					CurrentPowerUpLocation = CurrentPowerUp->GetActorLocation();
+					//UNiagaraFunctionLibrary::SpawnSystemAttached(PowerUpFX, CurrentPowerUp->CollisionComponent, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, true);
+				}
+			}
+		}
+
 		Pacman->Move(DeltaTime);
 		MoveGhosts(DeltaTime);
 	}
@@ -427,6 +455,7 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 	APacmanPawn* PacmanPawn = Cast<APacmanPawn>(PacmanOrGhost);
 	APacmanFood* PacmanFood = Cast<APacmanFood>(Other);
 	AGhostPawn* GhostPawn = Cast<AGhostPawn>(Other);
+	APowerUpTrigger* PowerUpTrigger = Cast<APowerUpTrigger>(Other);
 
 	if (PacmanPawn && PacmanFood && NumFoodLeft > 0) // Pacman - "Food" overlap.
 	{
@@ -512,9 +541,32 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 
 			GhostModeIndex = 0;
 			GhostModeTimer = GhostModeDurations[GhostModeIndex];
+			PowerUpTimer = GPowerUpPeriod;
 			DirectionUpdateTimer = 10000.0f;
 			FrightenedModeTimer = 0.0f;
 		}
+	}
+	else if (PacmanPawn && PowerUpTrigger)
+	{
+		check(PowerUpTrigger == CurrentPowerUp);
+		const int32 DiceRoll = FMath::RandRange(1, 100);
+		if (DiceRoll <= 5)
+		{
+			GPacmanNumLives += 1;
+			HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), GPacmanNumLives));
+		}
+		else if (DiceRoll <= 15)
+		{
+			GPacmanNumRandomTeleports += 1;
+			HUDWidget->RandomTeleportsText->SetText(FText::Format(LOCTEXT("RandomTeleports", "Teleports: {0}"), GPacmanNumRandomTeleports));
+		}
+		else
+		{
+			GPacmanScore += 50;
+			HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), GPacmanScore));
+		}
+		PowerUpTrigger->Destroy();
+		CurrentPowerUp = nullptr;
 	}
 	else if (GhostPawn) // Ghost - Ghost overlap.
 	{
@@ -578,6 +630,27 @@ void APacmanGameModeBase::DoRandomTeleport()
 	GPacmanNumRandomTeleports -= 1;
 	HUDWidget->RandomTeleportsText->SetText(FText::Format(LOCTEXT("RandomTeleports", "Teleports: {0}"), GPacmanNumRandomTeleports));
 
+	const FVector RandomLocation = SelectRandomLocationOnMap(World, Pacman->GetActorLocation());
+	Pacman->SelectRandomDirection(RandomLocation);
+	Pacman->SetTeleportMaterial();
+	Teleport =
+	{
+		Pacman->GetTeleportMaterial(), 1.0f, -1.0f,
+		[this, RandomLocation]()
+		{
+			Pacman->SetActorLocation(RandomLocation, false, nullptr, ETeleportType::ResetPhysics);
+		},
+		[this]()
+		{
+			Pacman->SetDefaultMaterial();
+		}
+	};
+}
+
+FVector APacmanGameModeBase::SelectRandomLocationOnMap(UWorld* World, const FVector& CurrentLocation)
+{
+	check(World != nullptr);
+
 	FVector RandomLocation = {};
 	for (;;)
 	{
@@ -607,7 +680,7 @@ void APacmanGameModeBase::DoRandomTeleport()
 		{
 			bIsBlocked = true;
 		}
-		if (FVector::Distance(RandomLocation, Pacman->GetActorLocation().GridSnap(GMapTileSize / 2)) < 200.0f)
+		if (FVector::Distance(RandomLocation, CurrentLocation.GridSnap(GMapTileSize / 2)) < 300.0f)
 		{
 			bIsBlocked = true;
 		}
@@ -616,21 +689,7 @@ void APacmanGameModeBase::DoRandomTeleport()
 			break;
 		}
 	}
-
-	Pacman->SelectRandomDirection(RandomLocation);
-	Pacman->SetTeleportMaterial();
-	Teleport =
-	{
-		Pacman->GetTeleportMaterial(), 1.0f, -1.0f,
-		[this, RandomLocation]()
-		{
-			Pacman->SetActorLocation(RandomLocation, false, nullptr, ETeleportType::ResetPhysics);
-		},
-		[this]()
-		{
-			Pacman->SetDefaultMaterial();
-		}
-	};
+	return RandomLocation;
 }
 
 

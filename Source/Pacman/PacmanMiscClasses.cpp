@@ -1,6 +1,7 @@
 #include "PacmanMiscClasses.h"
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
+#include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "PacmanGameModeBase.h"
 
@@ -61,4 +62,40 @@ APacmanFood::APacmanFood()
 	RootComponent = MeshComponent;
 
 	Score = 1;
+}
+
+
+APowerUpTrigger::APowerUpTrigger()
+{
+	//SetHidden(true);
+	//SetCanBeDamaged(false);
+
+	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
+	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	CollisionComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	CollisionComponent->InitSphereRadius((GMapTileSize / 2) * 0.4f);
+	//CollisionComponent->bHiddenInGame = false;
+
+	UStaticMeshComponent* VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
+	VisualComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	VisualComponent->SetupAttachment(CollisionComponent);
+
+	RootComponent = CollisionComponent;
+
+	{
+		static ConstructorHelpers::FObjectFinder<UStaticMesh> Finder(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
+		VisualComponent->SetStaticMesh(Finder.Object);
+		VisualComponent->SetRelativeScale3D(FVector(0.75f, 0.75f, 0.75f));
+	}
+}
+
+void APowerUpTrigger::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	Super::NotifyActorBeginOverlap(OtherActor);
+
+	APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode && OtherActor)
+	{
+		GameMode->HandleActorOverlap(OtherActor, this);
+	}
 }

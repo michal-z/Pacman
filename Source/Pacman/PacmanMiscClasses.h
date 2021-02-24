@@ -9,6 +9,7 @@ class UEditableTextBox;
 class UButton;
 class UVerticalBox;
 class UStaticMeshComponent;
+class USphereComponent;
 
 UCLASS(Abstract)
 class PACMAN_API UGenericInfoWidget : public UUserWidget
@@ -116,3 +117,18 @@ FORCEINLINE uint32 APacmanFood::GetScore() const
 {
 	return Score;
 }
+
+UCLASS()
+class PACMAN_API APowerUpTrigger : public AActor
+{
+public:
+	APowerUpTrigger();
+
+	UPROPERTY()
+	USphereComponent* CollisionComponent;
+
+private:
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+
+	GENERATED_BODY()
+};
