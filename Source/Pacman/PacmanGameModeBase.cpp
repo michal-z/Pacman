@@ -17,7 +17,8 @@ PRAGMA_DISABLE_OPTIMIZATION
 #define LOCTEXT_NAMESPACE "PacmanGameModeBase"
 
 static constexpr float GFrightenedModeDuration = 5.0f;
-static constexpr float GPowerUpPeriod = 5.0f;
+static constexpr float GPowerUpPeriod = 30.0f;
+static constexpr float GPowerUpLiveDuration = 5.0f;
 static constexpr int32 GNumHiscoreEntries = 4;
 static constexpr int32 GMapTileNumX = 20;
 static constexpr int32 GMapTileNumY = 20;
@@ -192,19 +193,23 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 			PowerUpTimer -= DeltaTime;
 			if (PowerUpTimer < 0.0f)
 			{
-				PowerUpTimer = GPowerUpPeriod;
 				if (CurrentPowerUp)
 				{
 					CurrentPowerUp->Destroy();
 					CurrentPowerUp = nullptr;
+					PowerUpTimer = GPowerUpPeriod;
 				}
-				UWorld* World = GetWorld();
-				if (World)
+				else
 				{
-					const FVector RandomLocation = SelectRandomLocationOnMap(World, CurrentPowerUpLocation);
-					CurrentPowerUp = World->SpawnActor<APowerUpTrigger>(RandomLocation, FRotator::ZeroRotator);
-					CurrentPowerUpLocation = CurrentPowerUp->GetActorLocation();
-					//UNiagaraFunctionLibrary::SpawnSystemAttached(PowerUpFX, CurrentPowerUp->CollisionComponent, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, true);
+					UWorld* World = GetWorld();
+					if (World)
+					{
+						const FVector RandomLocation = SelectRandomLocationOnMap(World, CurrentPowerUpLocation);
+						CurrentPowerUp = World->SpawnActor<APowerUpTrigger>(RandomLocation, FRotator::ZeroRotator);
+						CurrentPowerUpLocation = CurrentPowerUp->GetActorLocation();
+						PowerUpTimer = GPowerUpLiveDuration;
+						//UNiagaraFunctionLibrary::SpawnSystemAttached(PowerUpFX, CurrentPowerUp->CollisionComponent, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, true);
+					}
 				}
 			}
 		}
@@ -562,11 +567,12 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 		}
 		else
 		{
-			GPacmanScore += 50;
+			GPacmanScore += 200;
 			HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), GPacmanScore));
 		}
 		PowerUpTrigger->Destroy();
 		CurrentPowerUp = nullptr;
+		PowerUpTimer = GPowerUpPeriod;
 	}
 	else if (GhostPawn) // Ghost - Ghost overlap.
 	{
