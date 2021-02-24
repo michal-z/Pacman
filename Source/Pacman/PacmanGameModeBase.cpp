@@ -17,8 +17,8 @@ PRAGMA_DISABLE_OPTIMIZATION
 #define LOCTEXT_NAMESPACE "PacmanGameModeBase"
 
 static constexpr float GFrightenedModeDuration = 5.0f;
-static constexpr float GPowerUpPeriod = 30.0f;
 static constexpr float GPowerUpLiveDuration = 5.0f;
+static constexpr float GPowerUpSpawnPeriod = 30.0f;
 static constexpr int32 GNumHiscoreEntries = 9;
 static constexpr int32 GMapTileNumX = 20;
 static constexpr int32 GMapTileNumY = 20;
@@ -138,7 +138,7 @@ void APacmanGameModeBase::BeginPlay()
 		Ghosts.StableSort([](const AGhostPawn& G0, const AGhostPawn& G1) { return (int32)G0.GetColor() < (int32)G1.GetColor(); });
 
 		DirectionUpdateTimer = 10000.0f;
-		PowerUpTimer = GPowerUpPeriod;
+		PowerUpTimer = GPowerUpSpawnPeriod;
 		GhostModeTimer = GhostModeDurations[GhostModeIndex];
 		GGameLevel += 1;
 
@@ -200,7 +200,7 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 				{
 					CurrentPowerUp->Destroy();
 					CurrentPowerUp = nullptr;
-					PowerUpTimer = GPowerUpPeriod;
+					PowerUpTimer = GPowerUpSpawnPeriod;
 				}
 				else
 				{
@@ -549,7 +549,7 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 
 			GhostModeIndex = 0;
 			GhostModeTimer = GhostModeDurations[GhostModeIndex];
-			PowerUpTimer = GPowerUpPeriod;
+			PowerUpTimer = GPowerUpSpawnPeriod;
 			DirectionUpdateTimer = 10000.0f;
 			FrightenedModeTimer = 0.0f;
 		}
@@ -575,7 +575,7 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 		}
 		PowerUpTrigger->Destroy();
 		CurrentPowerUp = nullptr;
-		PowerUpTimer = GPowerUpPeriod;
+		PowerUpTimer = GPowerUpSpawnPeriod;
 	}
 	else if (GhostPawn) // Ghost - Ghost overlap.
 	{
