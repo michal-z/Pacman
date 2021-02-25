@@ -46,7 +46,7 @@ void AGhostPawn::BeginPlay()
 	Super::BeginPlay();
 
 	HouseLocation = GetActorLocation();
-	DefaultMaterial = VisualComponent->GetMaterial(0);
+	DefaultMaterial = UMaterialInstanceDynamic::Create(VisualComponent->GetMaterial(0), this);
 	{
 		APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 		if (GameMode)
