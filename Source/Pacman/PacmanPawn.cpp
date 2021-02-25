@@ -76,6 +76,7 @@ void APacmanPawn::BeginPlay()
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != TEXT("Main"))
 	{
 		InitialLocation = GetActorLocation();
+		DefaultMaterial = UMaterialInstanceDynamic::Create(VisualComponent->GetMaterial(0), this);
 
 		APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 		if (GameMode)

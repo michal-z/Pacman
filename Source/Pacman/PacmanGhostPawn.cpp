@@ -59,7 +59,7 @@ void AGhostPawn::BeginPlay()
 			TeleportMaterial->SetVectorParameterValue(TEXT("BaseColor"), BaseColor);
 			TeleportMaterial->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
 
-			FrightenedModeMaterial = GameMode->GetGhostFrightenedModeMaterial();
+			FrightenedModeMaterial = UMaterialInstanceDynamic::Create(GameMode->GetGhostFrightenedModeMaterial(), this);
 		}
 	}
 	FrozenModeTimer = LeaveHouseTime;
