@@ -62,6 +62,10 @@ APacmanGameModeBase::APacmanGameModeBase()
 		SuperFoodClass = Finder.Class;
 	}
 	{
+		static ConstructorHelpers::FClassFinder<APowerUpTrigger> Finder(TEXT("/Game/Blueprints/BP_PowerUpTrigger"));
+		PowerUpTriggerClass = Finder.Class;
+	}
+	{
 		static ConstructorHelpers::FObjectFinder<UNiagaraSystem> Finder(TEXT("/Game/FX/NS_SuperFood"));
 		SuperFoodFX = Finder.Object;
 	}
@@ -208,7 +212,7 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 					if (World)
 					{
 						const FVector RandomLocation = SelectRandomLocationOnMap(World, CurrentPowerUpLocation);
-						CurrentPowerUp = World->SpawnActor<APowerUpTrigger>(RandomLocation, FRotator::ZeroRotator);
+						CurrentPowerUp = World->SpawnActor(PowerUpTriggerClass, &RandomLocation, &FRotator::ZeroRotator);
 						CurrentPowerUpLocation = CurrentPowerUp->GetActorLocation();
 						PowerUpTimer = GPowerUpLiveDuration;
 						//UNiagaraFunctionLibrary::SpawnSystemAttached(PowerUpFX, CurrentPowerUp->CollisionComponent, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, true);

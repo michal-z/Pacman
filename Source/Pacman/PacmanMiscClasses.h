@@ -123,6 +123,9 @@ public:
 	USphereComponent* CollisionComponent;
 
 private:
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* MeshComponent;
+
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
 	GENERATED_BODY()

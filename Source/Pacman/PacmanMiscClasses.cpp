@@ -61,17 +61,11 @@ APowerUpTrigger::APowerUpTrigger()
 	CollisionComponent->InitSphereRadius((GMapTileSize / 2) * 0.4f);
 	//CollisionComponent->bHiddenInGame = false;
 
-	UStaticMeshComponent* VisualComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualComponent"));
-	VisualComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	VisualComponent->SetupAttachment(CollisionComponent);
+	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
+	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshComponent->SetupAttachment(CollisionComponent);
 
 	RootComponent = CollisionComponent;
-
-	{
-		static ConstructorHelpers::FObjectFinder<UStaticMesh> Finder(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
-		VisualComponent->SetStaticMesh(Finder.Object);
-		VisualComponent->SetRelativeScale3D(FVector(0.75f, 0.75f, 0.75f));
-	}
 }
 
 void APowerUpTrigger::NotifyActorBeginOverlap(AActor* OtherActor)

@@ -35,7 +35,7 @@ private:
 	UMaterial* TeleportBaseMaterial;
 	APacmanPawn* Pacman;
 	TArray<AGhostPawn*> Ghosts;
-	APowerUpTrigger* CurrentPowerUp;
+	AActor* CurrentPowerUp;
 	FVector CurrentPowerUpLocation;
 	UMaterialInstance* GhostFrightenedModeMaterial;
 	float PowerUpTimer;
@@ -53,6 +53,7 @@ private:
 	TSubclassOf<UUserWidget> GenericInfoWidgetClass;
 	TSubclassOf<UUserWidget> HUDWidgetClass;
 	TSubclassOf<APacmanFood> SuperFoodClass;
+	TSubclassOf<APowerUpTrigger> PowerUpTriggerClass;
 	UPROPERTY() UMainMenuWidget* MainMenuWidget;
 	UPROPERTY() UUserWidget* PauseMenuWidget;
 	UPROPERTY() UGenericInfoWidget* GenericInfoWidget;
