@@ -527,6 +527,7 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 				|| (LoadedHiscore && GPacmanScore > LoadedHiscore->Entries.Last().Score)
 				|| (LoadedHiscore && LoadedHiscore->Entries.Num() < GNumHiscoreEntries))
 			{
+				GetWorldTimerManager().ClearTimer(TimerHandle);
 				GenericInfoWidget->Text->SetText(LOCTEXT("EnterName", "Type your name and press <Enter>"));
 				GenericInfoWidget->AddToViewport();
 				GenericInfoWidget->PlayerName->SetVisibility(UWidget::ConvertRuntimeToSerializedVisibility(EVisibility::Visible));

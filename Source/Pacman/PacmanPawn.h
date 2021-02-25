@@ -19,7 +19,7 @@ public:
 	void SelectRandomDirection(const FVector& Location);
 
 private:
-	UMaterialInterface* DefaultMaterial;
+	UPROPERTY() UMaterialInterface* DefaultMaterial;
 	UPROPERTY() UMaterialInstanceDynamic* TeleportMaterial;
 	FVector InitialLocation;
 	FVector CurrentDirection;

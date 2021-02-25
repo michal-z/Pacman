@@ -32,12 +32,12 @@ public:
 private:
 	UNiagaraSystem* SuperFoodFX;
 	UNiagaraSystem* PowerUpFX;
-	UMaterial* TeleportBaseMaterial;
+	UPROPERTY() UMaterial* TeleportBaseMaterial;
 	APacmanPawn* Pacman;
 	TArray<AGhostPawn*> Ghosts;
 	AActor* CurrentPowerUp;
 	FVector CurrentPowerUpLocation;
-	UMaterialInstance* GhostFrightenedModeMaterial;
+	UPROPERTY() UMaterialInstance* GhostFrightenedModeMaterial;
 	float PowerUpTimer;
 	float FrightenedModeTimer;
 	float DirectionUpdateTimer;

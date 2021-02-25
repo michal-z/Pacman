@@ -36,8 +36,8 @@ private:
 	bool bIsInHouse;
 	bool bIsFrightened;
 	FVector HouseLocation;
-	UMaterialInterface* DefaultMaterial;
-	UMaterialInstance* FrightenedModeMaterial;
+	UPROPERTY() UMaterialInterface* DefaultMaterial;
+	UPROPERTY() UMaterialInstance* FrightenedModeMaterial;
 	UPROPERTY() UMaterialInstanceDynamic* TeleportMaterial;
 	UPROPERTY() USphereComponent* CollisionComponent;
 	UPROPERTY() UPawnMovementComponent* MovementComponent;
