@@ -477,6 +477,11 @@ uint32 APacmanGameModeBase::KillPacman()
 
 void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Other)
 {
+	if ((PacmanOrGhost && PacmanOrGhost->IsPendingKill()) || (Other && Other->IsPendingKill()))
+	{
+		return;
+	}
+
 	APacmanPawn* PacmanPawn = Cast<APacmanPawn>(PacmanOrGhost);
 	APacmanFood* PacmanFood = Cast<APacmanFood>(Other);
 	AGhostPawn* GhostPawn = Cast<AGhostPawn>(Other);
