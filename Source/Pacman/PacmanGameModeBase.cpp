@@ -267,35 +267,36 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 		for (AGhostPawn* Ghost : Ghosts)
 		{
 			const float Radius = GMapTileSize / 2 - 1.0f;
-			const FVector GhostLocation = Ghost->GetActorLocation();
 			const FVector GhostDirection = Ghost->CurrentDirection;
+			const FVector GhostLocationSnapped = Ghost->GetActorLocation().GridSnap(GMapTileSize / 2);
+			const FVector PacmanLocationSnapped = Pacman->GetActorLocation().GridSnap(GMapTileSize / 2);
 
 			FVector TargetLocation;
 			if (FrightenedModeTimer > 0.0f) // "Frightened mode" (Ghosts choose max. distance from Pacman).
 			{
-				TargetLocation = Pacman->GetActorLocation();
+				TargetLocation = PacmanLocationSnapped;
 			}
 			else if ((GhostModeIndex & 0x1) == 1) // Odd GhostModeIndex is Chase mode.
 			{
 				if (Ghost->GetColor() == EGhostColor::Red)
 				{
-					TargetLocation = Pacman->GetActorLocation();
+					TargetLocation = PacmanLocationSnapped;
 				}
 				else if (Ghost->GetColor() == EGhostColor::Pink)
 				{
-					TargetLocation = Pacman->GetActorLocation() + 4 * GMapTileSize * Pacman->GetCurrentDirection();
+					TargetLocation = PacmanLocationSnapped + 4 * GMapTileSize * Pacman->GetCurrentDirection();
 				}
 				else if (Ghost->GetColor() == EGhostColor::Blue)
 				{
-					const FVector RedGhostLocation = Ghosts[(int32)EGhostColor::Red]->GetActorLocation();
-					TargetLocation = RedGhostLocation + 2.0f * ((Pacman->GetActorLocation() + 2.0f * GMapTileSize * Pacman->GetCurrentDirection()) - RedGhostLocation);
+					const FVector RedGhostLocation = Ghosts[(int32)EGhostColor::Red]->GetActorLocation().GridSnap(GMapTileSize / 2);
+					TargetLocation = RedGhostLocation + 2.0f * ((PacmanLocationSnapped + 2.0f * GMapTileSize * Pacman->GetCurrentDirection()) - RedGhostLocation);
 				}
 				else if (Ghost->GetColor() == EGhostColor::Orange)
 				{
-					const float Distance = FVector::Distance(Pacman->GetActorLocation(), GhostLocation);
+					const float Distance = FVector::Distance(PacmanLocationSnapped, GhostLocationSnapped);
 					if (Distance >= 8.0f * GMapTileSize)
 					{
-						TargetLocation = Pacman->GetActorLocation();
+						TargetLocation = PacmanLocationSnapped;
 					}
 					else
 					{
@@ -311,7 +312,6 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			{
 				TargetLocation = Ghost->GetScatterTargetLocation();
 			}
-			const FVector GhostLocationSnapped = GhostLocation.GridSnap(GMapTileSize / 2);
 
 			const FVector Directions[] =
 			{
@@ -407,6 +407,7 @@ void APacmanGameModeBase::SaveHiscoreName(const FText& PlayerName, ETextCommit::
 	UGameplayStatics::SaveGameToSlot(NewHiscore, TEXT("Hiscore"), 0);
 
 	GenericInfoWidget->RemoveFromViewport();
+	GetWorldTimerManager().ClearTimer(TimerHandle);
 	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Main"));
 }
 
@@ -446,6 +447,22 @@ void APacmanGameModeBase::ResumeGame()
 	}
 }
 
+void APacmanGameModeBase::NewGame()
+{
+	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Level_01"));
+}
+
+void APacmanGameModeBase::QuitGame()
+{
+	UKismetSystemLibrary::QuitGame(GetWorld(), nullptr, EQuitPreference::Quit, true);
+}
+
+void APacmanGameModeBase::ReturnToMainMenu()
+{
+	GetWorldTimerManager().ClearTimer(TimerHandle);
+	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Main"));
+}
+
 uint32 APacmanGameModeBase::KillPacman()
 {
 	if (GPacmanNumLives == 0 || GPacmanNumLives == 1)
@@ -482,7 +499,7 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 
 		PacmanFood->Destroy();
 	}
-	else if (PacmanPawn && GhostPawn) // Pacman - Ghost overlap.
+	else if (PacmanPawn && GhostPawn && GPacmanNumLives > 0) // Pacman - Ghost overlap.
 	{
 		if (FrightenedModeTimer > 0.0f && GhostPawn->IsFrightened())
 		{
@@ -552,6 +569,11 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 			PowerUpTimer = GPowerUpSpawnPeriod;
 			DirectionUpdateTimer = 10000.0f;
 			FrightenedModeTimer = 0.0f;
+			if (CurrentPowerUp)
+			{
+				CurrentPowerUp->Destroy();
+				CurrentPowerUp = nullptr;
+			}
 		}
 	}
 	else if (PacmanPawn && PowerUpTrigger)

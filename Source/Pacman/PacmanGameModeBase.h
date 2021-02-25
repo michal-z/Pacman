@@ -19,6 +19,9 @@ class PACMAN_API APacmanGameModeBase : public AGameModeBase
 public:
 	APacmanGameModeBase();
 	UFUNCTION() void SaveHiscoreName(const FText& InText, ETextCommit::Type CommitMethod);
+	UFUNCTION() void NewGame();
+	UFUNCTION() void QuitGame();
+	UFUNCTION() void ReturnToMainMenu();
 	UFUNCTION() void ResumeGame();
 	void PauseGame();
 	void DoRandomTeleport();

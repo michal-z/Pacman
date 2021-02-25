@@ -36,9 +36,6 @@ private:
 
 	virtual void NativeConstruct() override;
 
-	UFUNCTION() void OnNewGame();
-	UFUNCTION() void OnQuitGame();
-
 	GENERATED_BODY()
 };
 
@@ -50,8 +47,6 @@ private:
 	UPROPERTY(meta = (BindWidget)) UButton* ReturnToMainMenuButton;
 
 	virtual void NativeConstruct() override;
-
-	UFUNCTION() void OnReturnToMainMenu();
 
 	GENERATED_BODY()
 };
