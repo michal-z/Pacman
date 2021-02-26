@@ -26,11 +26,6 @@ AGhostPawn::AGhostPawn()
 
 	RootComponent = CollisionComponent;
 
-	{
-		static ConstructorHelpers::FObjectFinder<UStaticMesh> Finder(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
-		VisualComponent->SetStaticMesh(Finder.Object);
-	}
-
 	MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
 	MovementComponent->UpdatedComponent = RootComponent;
 
