@@ -31,8 +31,11 @@ static uint32 GGameLevel;
 APacmanGameModeBase::APacmanGameModeBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	DefaultPawnClass = APacmanPawn::StaticClass();
 
+	{
+		static ConstructorHelpers::FClassFinder<APacmanPawn> Finder(TEXT("/Game/Blueprints/BP_PacmanPawn"));
+		DefaultPawnClass = Finder.Class;
+	}
 	{
 		static ConstructorHelpers::FClassFinder<UUserWidget> Finder(TEXT("/Game/UI/WBP_MainMenu"));
 		MainMenuWidgetClass = Finder.Class;

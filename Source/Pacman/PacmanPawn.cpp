@@ -29,17 +29,6 @@ APacmanPawn::APacmanPawn()
 
 	RootComponent = CollisionComponent;
 
-	{
-		static ConstructorHelpers::FObjectFinder<UStaticMesh> Finder(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
-		VisualComponent->SetStaticMesh(Finder.Object);
-	}
-	{
-		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder(TEXT("/Game/Materials/M_Pacman"));
-		DefaultMaterial = Finder.Object;
-
-		VisualComponent->SetMaterial(0, DefaultMaterial);
-	}
-
 	MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
 	MovementComponent->UpdatedComponent = RootComponent;
 
