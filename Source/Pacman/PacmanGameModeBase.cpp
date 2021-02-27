@@ -216,7 +216,10 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 					{
 						const FVector RandomLocation = SelectRandomLocationOnMap(World, CurrentPowerUpLocation);
 						CurrentPowerUp = World->SpawnActor(PowerUpTriggerClass, &RandomLocation, &FRotator::ZeroRotator);
-						CurrentPowerUpLocation = CurrentPowerUp->GetActorLocation();
+						if (CurrentPowerUp)
+						{
+							CurrentPowerUpLocation = CurrentPowerUp->GetActorLocation();
+						}
 						PowerUpTimer = GPowerUpLiveDuration;
 						//UNiagaraFunctionLibrary::SpawnSystemAttached(PowerUpFX, CurrentPowerUp->CollisionComponent, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, true);
 					}
@@ -589,7 +592,7 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 			}
 		}
 	}
-	else if (PacmanPawn && PowerUpTrigger)
+	else if (PacmanPawn && PowerUpTrigger && CurrentPowerUp) // Pacman - PowerUp overlap.
 	{
 		check(PowerUpTrigger == CurrentPowerUp);
 		const int32 DiceRoll = FMath::RandRange(1, 100);
