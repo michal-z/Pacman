@@ -179,6 +179,11 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (PauseMenuWidget && PauseMenuWidget->IsInViewport())
+	{
+		return;
+	}
+
 	if (Teleport.Material)
 	{
 		Teleport.Opacity += Teleport.Sign * DeltaTime;
@@ -430,14 +435,24 @@ void APacmanGameModeBase::PauseGame()
 		PauseMenuWidget = CreateWidget(GetWorld(), PauseMenuWidgetClass);
 	}
 
+	if (PauseMenuWidget->IsInViewport())
+	{
+		ResumeGame();
+		return;
+	}
+
 	PauseMenuWidget->AddToViewport();
 
 	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	if (PC)
 	{
-		PC->SetInputMode(FInputModeUIOnly());
-		PC->SetPause(true);
+		PC->SetInputMode(FInputModeGameAndUI());
 		PC->bShowMouseCursor = true;
+	}
+
+	if (GetWorldTimerManager().IsTimerActive(TimerHandle))
+	{
+		GetWorldTimerManager().PauseTimer(TimerHandle);
 	}
 }
 
@@ -452,8 +467,12 @@ void APacmanGameModeBase::ResumeGame()
 	if (PC)
 	{
 		PC->SetInputMode(FInputModeGameOnly());
-		PC->SetPause(false);
 		PC->bShowMouseCursor = false;
+	}
+
+	if (GetWorldTimerManager().IsTimerPaused(TimerHandle))
+	{
+		GetWorldTimerManager().UnPauseTimer(TimerHandle);
 	}
 }
 
