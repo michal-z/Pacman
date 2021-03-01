@@ -546,6 +546,12 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 	}
 	else if (PacmanPawn && GhostPawn && GPacmanNumLives > 0) // Pacman - Ghost overlap.
 	{
+		if (Teleports[(int32)GhostPawn->Color].Material)
+		{
+			// Ghost has been already killed and is teleporting - just ignore.
+			return;
+		}
+
 		if (FrightenedModeTimer > 0.0f && GhostPawn->bIsFrightened)
 		{
 			UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, SuperFoodFX, GhostPawn->GetActorLocation());
@@ -555,6 +561,7 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 			HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), GPacmanScore));
 
 			GhostPawn->FrightenedMaterial->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
+			GhostPawn->Material->SetScalarParameterValue(TEXT("Opacity"), 0.0f);
 			GhostPawn->SetFrightenedMaterial();
 			Teleports[(int32)GhostPawn->Color] =
 			{
@@ -563,12 +570,12 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 				{
 					GhostPawn->MoveToGhostHouse();
 					GhostPawn->FrozenModeTimer = 5.0f;
-					GhostPawn->Material->SetScalarParameterValue(TEXT("Opacity"), 0.0f);
 					GhostPawn->SetDefaultMaterial();
 					Teleports[(int32)GhostPawn->Color].Material = GhostPawn->Material;
 				},
 				[this, GhostPawn]()
 				{
+					GhostPawn->Material->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
 					GhostPawn->FrightenedMaterial->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
 				}
 			};
