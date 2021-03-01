@@ -78,7 +78,6 @@ void AGhostPawn::MoveToGhostHouse()
 	AGhostPawn* CDO = StaticClass()->GetDefaultObject<AGhostPawn>();
 
 	SetActorLocation(HouseLocation, false, nullptr, ETeleportType::ResetPhysics);
-	VisualComponent->SetMaterial(0, Material);
 	CurrentDirection = CDO->CurrentDirection;
 	bIsInHouse = true;
 	bIsFrightened = false;

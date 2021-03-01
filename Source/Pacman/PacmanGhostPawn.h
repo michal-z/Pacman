@@ -36,8 +36,6 @@ public:
 	void Move(float DeltaTime);
 	void SetDefaultMaterial();
 	void SetFrightenedMaterial();
-	void EnableFrightenedMode();
-	void DisableFrightenedMode();
 
 private:
 	UPROPERTY() USphereComponent* CollisionComponent;
@@ -58,25 +56,16 @@ private:
 
 FORCEINLINE void AGhostPawn::SetDefaultMaterial()
 {
-	VisualComponent->SetMaterial(0, Material);
+	if (VisualComponent && Material)
+	{
+		VisualComponent->SetMaterial(0, Material);
+	}
 }
 
 FORCEINLINE void AGhostPawn::SetFrightenedMaterial()
 {
-	VisualComponent->SetMaterial(0, FrightenedMaterial);
-}
-
-FORCEINLINE void AGhostPawn::EnableFrightenedMode()
-{
-	if (bIsInHouse == false)
+	if (VisualComponent && FrightenedMaterial)
 	{
-		bIsFrightened = true;
 		VisualComponent->SetMaterial(0, FrightenedMaterial);
 	}
-}
-
-FORCEINLINE void AGhostPawn::DisableFrightenedMode()
-{
-	bIsFrightened = false;
-	VisualComponent->SetMaterial(0, Material);
 }

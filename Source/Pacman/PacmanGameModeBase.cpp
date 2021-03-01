@@ -187,7 +187,7 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 		Teleport.Opacity += Teleport.Sign * DeltaTime;
 		Teleport.Material->SetScalarParameterValue(TEXT("Opacity"), FMath::Clamp(Teleport.Opacity, 0.0f, 1.0f));
 
-		if (Teleport.Opacity <= 0.0f)
+		if (Teleport.Opacity < 0.0f)
 		{
 			Teleport.Opacity = 0.0f;
 			Teleport.Sign = -Teleport.Sign;
@@ -196,7 +196,7 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 				Teleport.CalledWhenOpacity0();
 			}
 		}
-		else if (Teleport.Opacity >= 1.0f)
+		else if (Teleport.Opacity > 1.0f)
 		{
 			if (Teleport.CalledWhenOpacity1)
 			{
@@ -265,7 +265,11 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 
 			for (AGhostPawn* Ghost : Ghosts)
 			{
-				Ghost->DisableFrightenedMode();
+				Ghost->bIsFrightened = false;
+				if (Teleports[(int32)Ghost->Color].Material == nullptr)
+				{
+					Ghost->SetDefaultMaterial();
+				}
 			}
 		}
 	}
@@ -580,7 +584,7 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 	}
 	else if (PacmanPawn && GhostPawn && GPacmanNumLives > 0) // Pacman - Ghost overlap.
 	{
-		if (Teleports[(int32)GhostPawn->Color].Material)
+		if (Teleports[(int32)GhostPawn->Color].Material != nullptr)
 		{
 			// Ghost has been already killed and is teleporting - just ignore.
 			return;
@@ -594,22 +598,18 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 			GPacmanScore += 100;
 			HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), GPacmanScore));
 
-			GhostPawn->FrightenedMaterial->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
-			GhostPawn->Material->SetScalarParameterValue(TEXT("Opacity"), 0.0f);
-			GhostPawn->SetFrightenedMaterial();
+			GhostPawn->Material->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
+			GhostPawn->SetDefaultMaterial();
 			Teleports[(int32)GhostPawn->Color] =
 			{
-				GhostPawn->FrightenedMaterial, 1.0f, -1.0f,
+				GhostPawn->Material, 1.0f, -1.0f,
 				[this, GhostPawn]()
 				{
 					GhostPawn->MoveToGhostHouse();
-					GhostPawn->SetDefaultMaterial();
-					Teleports[(int32)GhostPawn->Color].Material = GhostPawn->Material;
 				},
 				[this, GhostPawn]()
 				{
 					GhostPawn->Material->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
-					GhostPawn->FrightenedMaterial->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
 				}
 			};
 			return;
@@ -734,7 +734,14 @@ void APacmanGameModeBase::BeginFrightenedMode()
 
 	for (AGhostPawn* Ghost : Ghosts)
 	{
-		Ghost->EnableFrightenedMode();
+		if (!Ghost->bIsInHouse)
+		{
+			Ghost->bIsFrightened = true;
+			if (Teleports[(int32)Ghost->Color].Material == nullptr)
+			{
+				Ghost->SetFrightenedMaterial();
+			}
+		}
 	}
 }
 
