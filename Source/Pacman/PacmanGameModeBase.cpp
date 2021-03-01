@@ -191,16 +191,28 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 		{
 			Teleport.Opacity = 0.0f;
 			Teleport.Sign = -Teleport.Sign;
-			Teleport.CalledWhenOpacity0();
+			if (Teleport.CalledWhenOpacity0)
+			{
+				Teleport.CalledWhenOpacity0();
+			}
 		}
 		else if (Teleport.Opacity >= 1.0f)
 		{
-			Teleport.CalledWhenOpacity1();
+			if (Teleport.CalledWhenOpacity1)
+			{
+				Teleport.CalledWhenOpacity1();
+			}
 			Teleport = {};
 		}
 	}
 
-	if (!Teleports[(int32)EGhostColor::Orange + 1].Material && GGameLevel > 0 && !GenericInfoWidget->IsInViewport())
+	if (Teleports[(int32)EGhostColor::Orange + 1].Material)
+	{
+		// Pacman teleport is in progress - so, block ("pause") game.
+		return;
+	}
+
+	if (GGameLevel > 0 && !GenericInfoWidget->IsInViewport())
 	{
 		if (PowerUpTimer > 0.0f)
 		{
@@ -604,15 +616,12 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 				[this]()
 				{
 					Pacman->MoveToStartLocation();
+					ShowGetReadyInfoWidget();
 					for (AGhostPawn* Ghost : Ghosts)
 					{
 						Ghost->MoveToGhostHouse();
 					}
 				},
-				[this]()
-				{
-					ShowGetReadyInfoWidget();
-				}
 			};
 
 			GhostModeIndex = 0;
@@ -721,9 +730,6 @@ void APacmanGameModeBase::DoRandomTeleport()
 		{
 			Pacman->SetActorLocation(RandomLocation, false, nullptr, ETeleportType::ResetPhysics);
 		},
-		[this]()
-		{
-		}
 	};
 }
 
