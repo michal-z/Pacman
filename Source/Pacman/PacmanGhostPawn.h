@@ -21,10 +21,12 @@ public:
 	FVector CurrentDirection;
 	float FrozenModeTimer;
 	bool bIsFrightened;
+	bool bIsInHouse;
 	FVector HouseLocation;
 
 	UPROPERTY(EditAnywhere, Category = "Ghost") EGhostColor Color;
 	UPROPERTY(EditAnywhere, Category = "Ghost") FVector ScatterTargetLocation;
+	UPROPERTY(EditAnywhere, Category = "Ghost") FVector SpawnLocation;
 
 	UPROPERTY() UMaterialInstanceDynamic* Material;
 	UPROPERTY() UMaterialInstanceDynamic* FrightenedMaterial;
@@ -38,14 +40,11 @@ public:
 	void DisableFrightenedMode();
 
 private:
-	bool bIsInHouse;
-
 	UPROPERTY() USphereComponent* CollisionComponent;
 	UPROPERTY() UPawnMovementComponent* MovementComponent;
 
 	UPROPERTY(EditAnywhere, Category = "Ghost") float Speed;
 	UPROPERTY(EditAnywhere, Category = "Ghost") float LeaveHouseTime;
-	UPROPERTY(EditAnywhere, Category = "Ghost") FVector SpawnLocation;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* VisualComponent;

@@ -400,6 +400,40 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 
 	for (AGhostPawn* Ghost : Ghosts)
 	{
+		if (Ghost->FrozenModeTimer > 0.0f)
+		{
+			Ghost->FrozenModeTimer -= DeltaTime;
+			if (Ghost->FrozenModeTimer <= 0.0f)
+			{
+				Ghost->FrozenModeTimer = 0.0f;
+				if (Ghost->bIsInHouse)
+				{
+					Ghost->FrozenModeTimer = 1.5f;
+					Ghost->Material->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
+					Ghost->SetDefaultMaterial();
+					Teleports[(int32)Ghost->Color] =
+					{
+						Ghost->Material, 1.0f, -1.0f,
+						[this, Ghost]()
+						{
+							Ghost->SetActorLocation(Ghost->SpawnLocation, false, nullptr, ETeleportType::ResetPhysics);
+							Ghost->bIsInHouse = false;
+							Ghost->bIsFrightened = false;
+							Ghost->FrozenModeTimer = 1.5f;
+						},
+						[this, Ghost]()
+						{
+							Ghost->Material->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
+						}
+					};
+					continue;
+				}
+			}
+			else
+			{
+				continue;
+			}
+		}
 		Ghost->Move(DeltaTime);
 	}
 }
@@ -569,7 +603,6 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 				[this, GhostPawn]()
 				{
 					GhostPawn->MoveToGhostHouse();
-					GhostPawn->FrozenModeTimer = 5.0f;
 					GhostPawn->SetDefaultMaterial();
 					Teleports[(int32)GhostPawn->Color].Material = GhostPawn->Material;
 				},
@@ -617,6 +650,7 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 		}
 		else
 		{
+			Pacman->Material->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
 			Teleports[(int32)EGhostColor::Orange + 1] =
 			{
 				Pacman->Material, 1.0f, -1.0f,
@@ -628,6 +662,10 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 					{
 						Ghost->MoveToGhostHouse();
 					}
+				},
+				[this]()
+				{
+					Pacman->Material->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
 				},
 			};
 
@@ -730,12 +768,17 @@ void APacmanGameModeBase::DoRandomTeleport()
 
 	const FVector RandomLocation = SelectRandomLocationOnMap(World, Pacman->GetActorLocation());
 	Pacman->SelectRandomDirection(RandomLocation);
+	Pacman->Material->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
 	Teleports[(int32)EGhostColor::Orange + 1] =
 	{
 		Pacman->Material, 1.0f, -1.0f,
 		[this, RandomLocation]()
 		{
 			Pacman->SetActorLocation(RandomLocation, false, nullptr, ETeleportType::ResetPhysics);
+		},
+		[this]()
+		{
+			Pacman->Material->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
 		},
 	};
 }

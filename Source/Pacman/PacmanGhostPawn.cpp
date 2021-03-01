@@ -87,26 +87,6 @@ void AGhostPawn::MoveToGhostHouse()
 
 void AGhostPawn::Move(float DeltaTime)
 {
-	if (FrozenModeTimer > 0.0f)
-	{
-		FrozenModeTimer -= DeltaTime;
-		if (FrozenModeTimer <= 0.0f)
-		{
-			FrozenModeTimer = 0.0f;
-			if (bIsInHouse)
-			{
-				bIsInHouse = false;
-				bIsFrightened = false;
-				FrozenModeTimer = 1.0f;
-				SetActorLocation(SpawnLocation, false, nullptr, ETeleportType::ResetPhysics);
-			}
-		}
-		else
-		{
-			return;
-		}
-	}
-
 	const float GhostSpeed = Speed * (bIsFrightened ? 0.5f : 1.0f);
 	const FVector Delta = CurrentDirection * GhostSpeed * DeltaTime;
 
