@@ -9,31 +9,31 @@ UCLASS()
 class PACMAN_API APacmanPawn : public APawn
 {
 public:
+	FVector CurrentDirection;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* Material;
+
 	APacmanPawn();
 	void Move(float DeltaTime);
 	void MoveToStartLocation();
-	void SetDefaultMaterial();
-	void SetTeleportMaterial();
-	FVector GetCurrentDirection() const;
-	UMaterialInstanceDynamic* GetTeleportMaterial() const;
 	void SelectRandomDirection(const FVector& Location);
 
 private:
-	UPROPERTY() UMaterialInstanceDynamic* DefaultMaterial;
-	UPROPERTY() UMaterialInstanceDynamic* TeleportMaterial;
-	FVector InitialLocation;
-	FVector CurrentDirection;
-	FVector WantedDirection;
 	UPROPERTY() UPawnMovementComponent* MovementComponent;
 	UPROPERTY() USphereComponent* CollisionComponent;
 
-	UPROPERTY(VisibleAnywhere, Category = "Components")
+	FVector InitialLocation;
+	FVector WantedDirection;
+
+	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* VisualComponent;
 
 	void MoveUp();
 	void MoveDown();
 	void MoveRight();
 	void MoveLeft();
+
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual UPawnMovementComponent* GetMovementComponent() const override;
@@ -41,23 +41,3 @@ private:
 
 	GENERATED_BODY()
 };
-
-FORCEINLINE void APacmanPawn::SetDefaultMaterial()
-{
-	VisualComponent->SetMaterial(0, DefaultMaterial);
-}
-
-FORCEINLINE void APacmanPawn::SetTeleportMaterial()
-{
-	VisualComponent->SetMaterial(0, TeleportMaterial);
-}
-
-FORCEINLINE FVector APacmanPawn::GetCurrentDirection() const
-{
-	return CurrentDirection;
-}
-
-FORCEINLINE UMaterialInstanceDynamic* APacmanPawn::GetTeleportMaterial() const
-{
-	return TeleportMaterial;
-}

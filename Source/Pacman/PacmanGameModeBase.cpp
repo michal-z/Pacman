@@ -53,14 +53,6 @@ APacmanGameModeBase::APacmanGameModeBase()
 		HUDWidgetClass = Finder.Class;
 	}
 	{
-		static ConstructorHelpers::FObjectFinder<UMaterialInstance> Finder(TEXT("/Game/Materials/M_GhostSuperFood"));
-		GhostFrightenedModeMaterial = Finder.Object;
-	}
-	{
-		static ConstructorHelpers::FObjectFinder<UMaterial> Finder(TEXT("/Game/Materials/M_TeleportBase"));
-		TeleportBaseMaterial = Finder.Object;
-	}
-	{
 		static ConstructorHelpers::FClassFinder<APacmanFood> Finder(TEXT("/Game/Blueprints/BP_SuperFood"));
 		SuperFoodClass = Finder.Class;
 	}
@@ -142,7 +134,7 @@ void APacmanGameModeBase::BeginPlay()
 		{
 			Ghosts.Add(CastChecked<AGhostPawn>(Actor));
 		}
-		Ghosts.StableSort([](const AGhostPawn& G0, const AGhostPawn& G1) { return (int32)G0.GetColor() < (int32)G1.GetColor(); });
+		Ghosts.StableSort([](const AGhostPawn& G0, const AGhostPawn& G1) { return (int32)G0.Color < (int32)G1.Color; });
 
 		DirectionUpdateTimer = 10000.0f;
 		PowerUpTimer = GPowerUpSpawnPeriod;
@@ -184,8 +176,14 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 		return;
 	}
 
-	if (Teleport.Material)
+	for (uint32 Idx = 0; Idx < _countof(Teleports); ++Idx)
 	{
+		FTeleport& Teleport = Teleports[Idx];
+		if (!Teleport.Material)
+		{
+			continue;
+		}
+
 		Teleport.Opacity += Teleport.Sign * DeltaTime;
 		Teleport.Material->SetScalarParameterValue(TEXT("Opacity"), FMath::Clamp(Teleport.Opacity, 0.0f, 1.0f));
 
@@ -201,7 +199,8 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 			Teleport = {};
 		}
 	}
-	else if (GGameLevel > 0 && !GenericInfoWidget->IsInViewport())
+
+	if (!Teleports[(int32)EGhostColor::Orange + 1].Material && GGameLevel > 0 && !GenericInfoWidget->IsInViewport())
 	{
 		if (PowerUpTimer > 0.0f)
 		{
@@ -293,20 +292,20 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			}
 			else if ((GhostModeIndex & 0x1) == 1) // Odd GhostModeIndex is Chase mode.
 			{
-				if (Ghost->GetColor() == EGhostColor::Red)
+				if (Ghost->Color == EGhostColor::Red)
 				{
 					TargetLocation = PacmanLocationSnapped;
 				}
-				else if (Ghost->GetColor() == EGhostColor::Pink)
+				else if (Ghost->Color == EGhostColor::Pink)
 				{
-					TargetLocation = PacmanLocationSnapped + 4 * GMapTileSize * Pacman->GetCurrentDirection();
+					TargetLocation = PacmanLocationSnapped + 4 * GMapTileSize * Pacman->CurrentDirection;
 				}
-				else if (Ghost->GetColor() == EGhostColor::Blue)
+				else if (Ghost->Color == EGhostColor::Blue)
 				{
 					const FVector RedGhostLocation = Ghosts[(int32)EGhostColor::Red]->GetActorLocation().GridSnap(GMapTileSize / 2);
-					TargetLocation = RedGhostLocation + 2.0f * ((PacmanLocationSnapped + 2.0f * GMapTileSize * Pacman->GetCurrentDirection()) - RedGhostLocation);
+					TargetLocation = RedGhostLocation + 2.0f * ((PacmanLocationSnapped + 2.0f * GMapTileSize * Pacman->CurrentDirection) - RedGhostLocation);
 				}
-				else if (Ghost->GetColor() == EGhostColor::Orange)
+				else if (Ghost->Color == EGhostColor::Orange)
 				{
 					const float Distance = FVector::Distance(PacmanLocationSnapped, GhostLocationSnapped);
 					if (Distance >= 8.0f * GMapTileSize)
@@ -315,7 +314,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 					}
 					else
 					{
-						TargetLocation = Ghost->GetScatterTargetLocation();
+						TargetLocation = Ghost->ScatterTargetLocation;
 					}
 				}
 				else
@@ -325,7 +324,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			}
 			else // Even GhostModeIndex is Scatter mode.
 			{
-				TargetLocation = Ghost->GetScatterTargetLocation();
+				TargetLocation = Ghost->ScatterTargetLocation;
 			}
 
 			const FVector Directions[] =
@@ -363,7 +362,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			}
 			else
 			{
-				float MaxDistance = 0.0f;
+				float MaxDistance = -1.0f;
 				for (uint32 Idx = 0; Idx < 3; ++Idx)
 				{
 					if (bIsBlocked[Idx] == false && Distances[Idx] > MaxDistance)
@@ -535,13 +534,32 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 	}
 	else if (PacmanPawn && GhostPawn && GPacmanNumLives > 0) // Pacman - Ghost overlap.
 	{
-		if (FrightenedModeTimer > 0.0f && GhostPawn->IsFrightened())
+		if (FrightenedModeTimer > 0.0f && GhostPawn->bIsFrightened)
 		{
 			UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, SuperFoodFX, GhostPawn->GetActorLocation());
-			GhostPawn->MoveToGhostHouse();
+
 			GhostPawn->FrozenModeTimer = 5.0f;
 			GPacmanScore += 100;
 			HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), GPacmanScore));
+
+			GhostPawn->FrightenedMaterial->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
+			GhostPawn->SetFrightenedMaterial();
+			Teleports[(int32)GhostPawn->Color] =
+			{
+				GhostPawn->FrightenedMaterial, 1.0f, -1.0f,
+				[this, GhostPawn]()
+				{
+					GhostPawn->MoveToGhostHouse();
+					GhostPawn->FrozenModeTimer = 5.0f;
+					GhostPawn->Material->SetScalarParameterValue(TEXT("Opacity"), 0.0f);
+					GhostPawn->SetDefaultMaterial();
+					Teleports[(int32)GhostPawn->Color].Material = GhostPawn->Material;
+				},
+				[this, GhostPawn]()
+				{
+					GhostPawn->FrightenedMaterial->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
+				}
+			};
 			return;
 		}
 
@@ -580,10 +598,9 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 		}
 		else
 		{
-			Pacman->SetTeleportMaterial();
-			Teleport =
+			Teleports[(int32)EGhostColor::Orange + 1] =
 			{
-				Pacman->GetTeleportMaterial(), 1.0f, -1.0f,
+				Pacman->Material, 1.0f, -1.0f,
 				[this]()
 				{
 					Pacman->MoveToStartLocation();
@@ -594,7 +611,6 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 				},
 				[this]()
 				{
-					Pacman->SetDefaultMaterial();
 					ShowGetReadyInfoWidget();
 				}
 			};
@@ -682,7 +698,7 @@ void APacmanGameModeBase::ShowGetReadyInfoWidget()
 
 void APacmanGameModeBase::DoRandomTeleport()
 {
-	if (GPacmanNumRandomTeleports == 0 || GGameLevel == 0 || GenericInfoWidget->IsInViewport() || Teleport.Material)
+	if (GPacmanNumRandomTeleports == 0 || GGameLevel == 0 || GenericInfoWidget->IsInViewport() || Teleports[(int32)EGhostColor::Orange + 1].Material)
 	{
 		return;
 	}
@@ -698,17 +714,15 @@ void APacmanGameModeBase::DoRandomTeleport()
 
 	const FVector RandomLocation = SelectRandomLocationOnMap(World, Pacman->GetActorLocation());
 	Pacman->SelectRandomDirection(RandomLocation);
-	Pacman->SetTeleportMaterial();
-	Teleport =
+	Teleports[(int32)EGhostColor::Orange + 1] =
 	{
-		Pacman->GetTeleportMaterial(), 1.0f, -1.0f,
+		Pacman->Material, 1.0f, -1.0f,
 		[this, RandomLocation]()
 		{
 			Pacman->SetActorLocation(RandomLocation, false, nullptr, ETeleportType::ResetPhysics);
 		},
 		[this]()
 		{
-			Pacman->SetDefaultMaterial();
 		}
 	};
 }
@@ -732,17 +746,17 @@ FVector APacmanGameModeBase::SelectRandomLocationOnMap(UWorld* World, const FVec
 
 		for (AGhostPawn* Ghost : Ghosts)
 		{
-			if ((Ghost->GetHouseLocation() - RandomLocation).IsNearlyZero(1.5f))
+			if ((Ghost->HouseLocation - RandomLocation).IsNearlyZero(1.5f))
 			{
 				bIsBlocked = true;
 				break;
 			}
 		}
-		if ((Ghosts[(int32)EGhostColor::Red]->GetHouseLocation() - (RandomLocation + FVector(-GMapTileSize, 0.0f, 0.0f))).IsNearlyZero(1.5f))
+		if ((Ghosts[(int32)EGhostColor::Red]->HouseLocation - (RandomLocation + FVector(-GMapTileSize, 0.0f, 0.0f))).IsNearlyZero(1.5f))
 		{
 			bIsBlocked = true;
 		}
-		if ((Ghosts[(int32)EGhostColor::Red]->GetHouseLocation() - (RandomLocation + FVector(GMapTileSize, 0.0f, 0.0f))).IsNearlyZero(1.5f))
+		if ((Ghosts[(int32)EGhostColor::Red]->HouseLocation - (RandomLocation + FVector(GMapTileSize, 0.0f, 0.0f))).IsNearlyZero(1.5f))
 		{
 			bIsBlocked = true;
 		}

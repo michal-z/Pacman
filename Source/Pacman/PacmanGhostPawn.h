@@ -20,32 +20,31 @@ class PACMAN_API AGhostPawn : public APawn
 public:
 	FVector CurrentDirection;
 	float FrozenModeTimer;
+	bool bIsFrightened;
+	FVector HouseLocation;
+
+	UPROPERTY(EditAnywhere, Category = "Ghost") EGhostColor Color;
+	UPROPERTY(EditAnywhere, Category = "Ghost") FVector ScatterTargetLocation;
+
+	UPROPERTY() UMaterialInstanceDynamic* Material;
+	UPROPERTY() UMaterialInstanceDynamic* FrightenedMaterial;
 
 	AGhostPawn();
 	void MoveToGhostHouse();
+	void Move(float DeltaTime);
+	void SetDefaultMaterial();
+	void SetFrightenedMaterial();
 	void EnableFrightenedMode();
 	void DisableFrightenedMode();
-	void Move(float DeltaTime);
-	EGhostColor GetColor() const;
-	FVector GetScatterTargetLocation() const;
-	FVector GetHouseLocation() const;
-	float GetSpeed() const;
-	bool IsFrightened() const;
 
 private:
 	bool bIsInHouse;
-	bool bIsFrightened;
-	FVector HouseLocation;
-	UPROPERTY() UMaterialInstanceDynamic* DefaultMaterial;
-	UPROPERTY() UMaterialInstanceDynamic* FrightenedModeMaterial;
-	UPROPERTY() UMaterialInstanceDynamic* TeleportMaterial;
+
 	UPROPERTY() USphereComponent* CollisionComponent;
 	UPROPERTY() UPawnMovementComponent* MovementComponent;
 
 	UPROPERTY(EditAnywhere, Category = "Ghost") float Speed;
 	UPROPERTY(EditAnywhere, Category = "Ghost") float LeaveHouseTime;
-	UPROPERTY(EditAnywhere, Category = "Ghost") EGhostColor Color;
-	UPROPERTY(EditAnywhere, Category = "Ghost") FVector ScatterTargetLocation;
 	UPROPERTY(EditAnywhere, Category = "Ghost") FVector SpawnLocation;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
@@ -58,24 +57,14 @@ private:
 	GENERATED_BODY()
 };
 
-FORCEINLINE EGhostColor AGhostPawn::GetColor() const
+FORCEINLINE void AGhostPawn::SetDefaultMaterial()
 {
-	return Color;
+	VisualComponent->SetMaterial(0, Material);
 }
 
-FORCEINLINE FVector AGhostPawn::GetScatterTargetLocation() const
+FORCEINLINE void AGhostPawn::SetFrightenedMaterial()
 {
-	return ScatterTargetLocation;
-}
-
-FORCEINLINE FVector AGhostPawn::GetHouseLocation() const
-{
-	return HouseLocation;
-}
-
-FORCEINLINE float AGhostPawn::GetSpeed() const
-{
-	return Speed;
+	VisualComponent->SetMaterial(0, FrightenedMaterial);
 }
 
 FORCEINLINE void AGhostPawn::EnableFrightenedMode()
@@ -83,17 +72,12 @@ FORCEINLINE void AGhostPawn::EnableFrightenedMode()
 	if (bIsInHouse == false)
 	{
 		bIsFrightened = true;
-		VisualComponent->SetMaterial(0, FrightenedModeMaterial);
+		VisualComponent->SetMaterial(0, FrightenedMaterial);
 	}
 }
 
 FORCEINLINE void AGhostPawn::DisableFrightenedMode()
 {
 	bIsFrightened = false;
-	VisualComponent->SetMaterial(0, DefaultMaterial);
-}
-
-FORCEINLINE bool AGhostPawn::IsFrightened() const
-{
-	return bIsFrightened;
+	VisualComponent->SetMaterial(0, Material);
 }

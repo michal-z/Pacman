@@ -41,22 +41,16 @@ void AGhostPawn::BeginPlay()
 	Super::BeginPlay();
 
 	HouseLocation = GetActorLocation();
-	DefaultMaterial = UMaterialInstanceDynamic::Create(VisualComponent->GetMaterial(0), this);
+
+	Material = UMaterialInstanceDynamic::Create(VisualComponent->GetMaterial(0), this);
+	VisualComponent->SetMaterial(0, Material);
+
+	APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode)
 	{
-		APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-		if (GameMode)
-		{
-			FLinearColor BaseColor(0.0f, 0.0f, 0.0f);
-			FMaterialParameterInfo BaseColorInfo(TEXT("BaseColor"));
-			DefaultMaterial->GetVectorParameterValue(BaseColorInfo, BaseColor);
-
-			TeleportMaterial = UMaterialInstanceDynamic::Create(GameMode->GetTeleportBaseMaterial(), this);
-			TeleportMaterial->SetVectorParameterValue(TEXT("BaseColor"), BaseColor);
-			TeleportMaterial->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
-
-			FrightenedModeMaterial = UMaterialInstanceDynamic::Create(GameMode->GetGhostFrightenedModeMaterial(), this);
-		}
+		FrightenedMaterial = UMaterialInstanceDynamic::Create(GameMode->GhostFrightenedMaterial, this);
 	}
+
 	FrozenModeTimer = LeaveHouseTime;
 }
 
@@ -84,7 +78,7 @@ void AGhostPawn::MoveToGhostHouse()
 	AGhostPawn* CDO = StaticClass()->GetDefaultObject<AGhostPawn>();
 
 	SetActorLocation(HouseLocation, false, nullptr, ETeleportType::ResetPhysics);
-	VisualComponent->SetMaterial(0, DefaultMaterial);
+	VisualComponent->SetMaterial(0, Material);
 	CurrentDirection = CDO->CurrentDirection;
 	bIsInHouse = true;
 	bIsFrightened = false;
@@ -113,7 +107,7 @@ void AGhostPawn::Move(float DeltaTime)
 		}
 	}
 
-	const float GhostSpeed = GetSpeed() * (bIsFrightened ? 0.5f : 1.0f);
+	const float GhostSpeed = Speed * (bIsFrightened ? 0.5f : 1.0f);
 	const FVector Delta = CurrentDirection * GhostSpeed * DeltaTime;
 
 	FHitResult Hit;

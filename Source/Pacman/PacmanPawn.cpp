@@ -65,19 +65,8 @@ void APacmanPawn::BeginPlay()
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) != TEXT("Main"))
 	{
 		InitialLocation = GetActorLocation();
-		DefaultMaterial = UMaterialInstanceDynamic::Create(VisualComponent->GetMaterial(0), this);
-
-		APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-		if (GameMode)
-		{
-			FLinearColor BaseColor(0.0f, 0.0f, 0.0f);
-			FMaterialParameterInfo BaseColorInfo(TEXT("BaseColor"));
-			DefaultMaterial->GetVectorParameterValue(BaseColorInfo, BaseColor);
-
-			TeleportMaterial = UMaterialInstanceDynamic::Create(GameMode->GetTeleportBaseMaterial(), this);
-			TeleportMaterial->SetVectorParameterValue(TEXT("BaseColor"), BaseColor);
-			TeleportMaterial->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
-		}
+		Material = UMaterialInstanceDynamic::Create(VisualComponent->GetMaterial(0), this);
+		VisualComponent->SetMaterial(0, Material);
 	}
 }
 

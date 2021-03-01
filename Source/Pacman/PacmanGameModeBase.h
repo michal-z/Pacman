@@ -26,8 +26,8 @@ public:
 	void PauseGame();
 	void DoRandomTeleport();
 	void HandleActorOverlap(AActor* PacmanOrGhost, AActor* Other);
-	UMaterial* GetTeleportBaseMaterial() const;
-	UMaterialInstance* GetGhostFrightenedModeMaterial() const;
+
+	UPROPERTY(EditAnywhere) UMaterialInterface* GhostFrightenedMaterial;
 
 private:
 	UNiagaraSystem* SuperFoodFX;
@@ -58,14 +58,15 @@ private:
 	UPROPERTY() UUserWidget* PauseMenuWidget;
 	UPROPERTY() UGenericInfoWidget* GenericInfoWidget;
 	UPROPERTY() UPacmanHUDWidget* HUDWidget;
-	struct
+	struct FTeleport
 	{
 		UMaterialInstanceDynamic* Material;
 		float Opacity;
 		float Sign;
 		TFunction<void()> CalledWhenOpacity0;
 		TFunction<void()> CalledWhenOpacity1;
-	} Teleport;
+	};
+	FTeleport Teleports[5];
 
 	void MoveGhosts(float DeltaTime);
 	void ShowGetReadyInfoWidget();
@@ -79,13 +80,3 @@ private:
 
 	GENERATED_BODY()
 };
-
-FORCEINLINE UMaterial* APacmanGameModeBase::GetTeleportBaseMaterial() const
-{
-	return TeleportBaseMaterial;
-}
-
-FORCEINLINE UMaterialInstance* APacmanGameModeBase::GetGhostFrightenedModeMaterial() const
-{
-	return GhostFrightenedModeMaterial;
-}
