@@ -195,6 +195,7 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 			{
 				Teleport.CalledWhenOpacity0();
 			}
+			Teleport.Material->SetScalarParameterValue(TEXT("Opacity"), 0.0f);
 		}
 		else if (Teleport.Opacity > 1.0f)
 		{
@@ -202,6 +203,7 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 			{
 				Teleport.CalledWhenOpacity1();
 			}
+			Teleport.Material->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
 			Teleport = {};
 		}
 	}
@@ -266,10 +268,7 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 			for (AGhostPawn* Ghost : Ghosts)
 			{
 				Ghost->bIsFrightened = false;
-				if (Teleports[(int32)Ghost->Color].Material == nullptr)
-				{
-					Ghost->SetDefaultMaterial();
-				}
+				Ghost->SetDefaultMaterial();
 			}
 		}
 	}
@@ -425,10 +424,6 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 							Ghost->bIsFrightened = false;
 							Ghost->FrozenModeTimer = 1.5f;
 						},
-						[this, Ghost]()
-						{
-							Ghost->Material->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
-						}
 					};
 					continue;
 				}
@@ -607,10 +602,6 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 				{
 					GhostPawn->MoveToGhostHouse();
 				},
-				[this, GhostPawn]()
-				{
-					GhostPawn->Material->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
-				}
 			};
 			return;
 		}
@@ -662,10 +653,6 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 					{
 						Ghost->MoveToGhostHouse();
 					}
-				},
-				[this]()
-				{
-					Pacman->Material->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
 				},
 			};
 
@@ -737,10 +724,7 @@ void APacmanGameModeBase::BeginFrightenedMode()
 		if (!Ghost->bIsInHouse)
 		{
 			Ghost->bIsFrightened = true;
-			if (Teleports[(int32)Ghost->Color].Material == nullptr)
-			{
-				Ghost->SetFrightenedMaterial();
-			}
+			Ghost->SetFrightenedMaterial();
 		}
 	}
 }
@@ -782,10 +766,6 @@ void APacmanGameModeBase::DoRandomTeleport()
 		[this, RandomLocation]()
 		{
 			Pacman->SetActorLocation(RandomLocation, false, nullptr, ETeleportType::ResetPhysics);
-		},
-		[this]()
-		{
-			Pacman->Material->SetScalarParameterValue(TEXT("Opacity"), 1.0f);
 		},
 	};
 }
