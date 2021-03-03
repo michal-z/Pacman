@@ -10,6 +10,7 @@
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Blueprint/UserWidget.h"
 #include "NiagaraSystem.h"
+#include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
@@ -596,7 +597,12 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 
 		if (FrightenedModeTimer > 0.0f && GhostPawn->bIsFrightened)
 		{
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, SuperFoodFX, GhostPawn->GetActorLocation());
+			UNiagaraComponent* FX = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, SuperFoodFX, GhostPawn->GetActorLocation());
+			{
+				FLinearColor Color;
+				GhostPawn->Material->GetVectorParameterDefaultValue(FHashedMaterialParameterInfo(TEXT("BaseColor")), Color);
+				FX->SetVariableLinearColor(TEXT("Color"), Color);
+			}
 
 			GhostPawn->FrozenModeTimer = 5.0f;
 			GPacmanScore += 100;
