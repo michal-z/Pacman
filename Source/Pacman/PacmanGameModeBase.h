@@ -31,11 +31,11 @@ public:
 	UPROPERTY(EditAnywhere) UMaterialInterface* GhostFrightenedMaterial;
 
 private:
-	UNiagaraSystem* SuperFoodFX;
-	UNiagaraSystem* PowerUpFX;
-	APacmanPawn* Pacman;
+	UPROPERTY() UNiagaraSystem* SuperFoodFX;
+	UPROPERTY() UNiagaraSystem* PowerUpFX;
+	UPROPERTY() APacmanPawn* Pacman;
 	TArray<AGhostPawn*> Ghosts;
-	AActor* CurrentPowerUp;
+	UPROPERTY() AActor* CurrentPowerUp;
 	FVector CurrentPowerUpLocation;
 	UPROPERTY() UMaterial* TeleportBaseMaterial;
 	UPROPERTY() UMaterialInstance* GhostFrightenedModeMaterial;
