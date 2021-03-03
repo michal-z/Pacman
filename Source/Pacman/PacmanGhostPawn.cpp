@@ -43,12 +43,14 @@ void AGhostPawn::BeginPlay()
 	HouseLocation = GetActorLocation();
 
 	Material = UMaterialInstanceDynamic::Create(VisualComponent->GetMaterial(0), this);
+	Material->SetScalarParameterValue(TEXT("Opacity"), GGhostDefaultOpacity);
 	VisualComponent->SetMaterial(0, Material);
 
 	APacmanGameModeBase* GameMode = Cast<APacmanGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameMode)
 	{
 		FrightenedMaterial = UMaterialInstanceDynamic::Create(GameMode->GhostFrightenedMaterial, this);
+		FrightenedMaterial->SetScalarParameterValue(TEXT("Opacity"), GGhostDefaultOpacity);
 	}
 
 	FrozenModeTimer = LeaveHouseTime;
