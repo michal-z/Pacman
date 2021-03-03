@@ -37,13 +37,10 @@ private:
 	TArray<AGhostPawn*> Ghosts;
 	UPROPERTY() AActor* CurrentPowerUp;
 	FVector CurrentPowerUpLocation;
-	UPROPERTY() UMaterial* TeleportBaseMaterial;
-	UPROPERTY() UMaterialInstance* GhostFrightenedModeMaterial;
 	float PowerUpTimer;
 	float FrightenedModeTimer;
 	float DirectionUpdateTimer;
 	// Even GhostModeIndex is Scatter mode. Odd GhostModeIndex is Chase mode.
-	//static constexpr float GhostModeDurations[] = { 7.0f, 20.0f, 5.0f, 20.0f, 3.0f };
 	static constexpr float GhostModeDurations[] = { 15.0f, 30.0f, 15.0f, 30.0f, 10.0f };
 	float GhostModeTimer;
 	uint32 GhostModeIndex;
@@ -65,7 +62,7 @@ private:
 		float Opacity;
 		float Sign;
 		TFunction<void()> CalledWhenOpacity0;
-		TFunction<void()> CalledWhenOpacity1;
+		//TFunction<void()> CalledWhenOpacity1;
 	};
 	FTeleport Teleports[5];
 

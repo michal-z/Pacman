@@ -202,10 +202,10 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 		}
 		else if (Teleport.Opacity > MaxOpacity)
 		{
-			if (Teleport.CalledWhenOpacity1)
-			{
-				Teleport.CalledWhenOpacity1();
-			}
+			//if (Teleport.CalledWhenOpacity1)
+			//{
+				//Teleport.CalledWhenOpacity1();
+			//}
 			Teleport.Material->SetScalarParameterValue(TEXT("Opacity"), MaxOpacity);
 			Teleport = {};
 		}
