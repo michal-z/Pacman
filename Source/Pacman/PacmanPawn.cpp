@@ -111,7 +111,6 @@ void APacmanPawn::Move(float DeltaTime)
 
 	const float Radius = CollisionComponent->GetScaledSphereRadius();
 	const FVector LocationSnapped = GetActorLocation().GridSnap(GMapTileSize / 2);
-	//const bool bIsBlocked = World->SweepTestByChannel(GetActorLocation(), GetActorLocation() + WantedDirection * Radius * 0.5f, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
 	const bool bIsBlocked = World->SweepTestByChannel(LocationSnapped, LocationSnapped + (GMapTileSize / 2) * WantedDirection, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
 
 	if (!bIsBlocked)
