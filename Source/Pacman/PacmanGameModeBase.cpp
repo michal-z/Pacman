@@ -799,7 +799,6 @@ FVector APacmanGameModeBase::SelectRandomLocationOnMap(UWorld* World, const FVec
 	FVector RandomLocation = {};
 	for (;;)
 	{
-		RandomLocation;
 		RandomLocation.X = FMath::RandRange(0, GMapTileNumX - 1) * GMapTileSize - ((GMapTileSize * GMapTileNumX) / 2) - GMapTileSize / 2;
 		RandomLocation.Y = FMath::RandRange(0, GMapTileNumY - 1) * GMapTileSize - ((GMapTileSize * GMapTileNumY) / 2) - GMapTileSize / 2;
 		RandomLocation.Z = GMapTileSize / 2;
