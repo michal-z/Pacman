@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{1110D4D9-4EB6-672A-D4B1-D8910FFB9546}",
+	"EngineAssociation": "{A6591C20-4A33-E2C0-5C5F-DC8AEEEF6767}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -12,16 +12,6 @@
 				"Engine",
 				"UMG"
 			]
-		}
-	],
-	"Plugins": [
-		{
-			"Name": "PythonScriptPlugin",
-			"Enabled": true
-		},
-		{
-			"Name": "HoudiniEngine",
-			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
