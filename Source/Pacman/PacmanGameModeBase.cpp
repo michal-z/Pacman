@@ -9,11 +9,6 @@
 #include "Components/VerticalBox.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Blueprint/UserWidget.h"
-#include "NiagaraSystem.h"
-#include "NiagaraComponent.h"
-#include "NiagaraFunctionLibrary.h"
-
-PRAGMA_DISABLE_OPTIMIZATION
 
 #define LOCTEXT_NAMESPACE "PacmanGameModeBase"
 
@@ -60,14 +55,6 @@ APacmanGameModeBase::APacmanGameModeBase()
 	{
 		static ConstructorHelpers::FClassFinder<APowerUpTrigger> Finder(TEXT("/Game/Blueprints/BP_PowerUpTrigger"));
 		PowerUpTriggerClass = Finder.Class;
-	}
-	{
-		static ConstructorHelpers::FObjectFinder<UNiagaraSystem> Finder(TEXT("/Game/FX/NS_SuperFood"));
-		SuperFoodFX = Finder.Object;
-	}
-	{
-		static ConstructorHelpers::FObjectFinder<UNiagaraSystem> Finder(TEXT("/Game/FX/NS_PowerUp"));
-		PowerUpFX = Finder.Object;
 	}
 }
 
@@ -202,10 +189,6 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 		}
 		else if (Teleport.Opacity > MaxOpacity)
 		{
-			//if (Teleport.CalledWhenOpacity1)
-			//{
-				//Teleport.CalledWhenOpacity1();
-			//}
 			Teleport.Material->SetScalarParameterValue(TEXT("Opacity"), MaxOpacity);
 			Teleport = {};
 		}
@@ -242,7 +225,6 @@ void APacmanGameModeBase::Tick(float DeltaTime)
 							CurrentPowerUpLocation = CurrentPowerUp->GetActorLocation();
 						}
 						PowerUpTimer = GPowerUpLiveDuration;
-						//UNiagaraFunctionLibrary::SpawnSystemAttached(PowerUpFX, CurrentPowerUp->CollisionComponent, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, true);
 					}
 				}
 			}
@@ -582,7 +564,6 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 		else if (PacmanFood->IsA(SuperFoodClass))
 		{
 			BeginFrightenedMode();
-			//UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, SuperFoodFX, PacmanFood->GetActorLocation());
 		}
 
 		PacmanFood->Destroy();
@@ -597,11 +578,9 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 
 		if (FrightenedModeTimer > 0.0f && GhostPawn->bIsFrightened)
 		{
-			//UNiagaraComponent* FX = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, SuperFoodFX, GhostPawn->GetActorLocation());
 			{
 				FLinearColor Color;
 				GhostPawn->Material->GetVectorParameterDefaultValue(FHashedMaterialParameterInfo(TEXT("BaseColor")), Color);
-				//FX->SetVariableLinearColor(TEXT("Color"), Color);
 			}
 
 			GhostPawn->FrozenModeTimer = 5.0f;

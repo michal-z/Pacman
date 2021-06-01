@@ -6,8 +6,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/FloatingPawnMovement.h"
 
-PRAGMA_DISABLE_OPTIMIZATION
-
 #define LOCTEXT_NAMESPACE "PacmanPawn"
 
 APacmanPawn::APacmanPawn()
@@ -110,10 +108,11 @@ void APacmanPawn::Move(float DeltaTime)
 	}
 
 	const float Radius = CollisionComponent->GetScaledSphereRadius();
-	const FVector LocationSnapped = GetActorLocation().GridSnap(GMapTileSize / 2);
+	const FVector Location = GetActorLocation();
+	const FVector LocationSnapped = Location.GridSnap(GMapTileSize / 2);
 	const bool bIsBlocked = World->SweepTestByChannel(LocationSnapped, LocationSnapped + (GMapTileSize / 2) * WantedDirection, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(Radius));
 
-	if (!bIsBlocked)
+	if (!bIsBlocked && FVector::Distance(Location, LocationSnapped) < 10.0f)
 	{
 		CurrentDirection = WantedDirection;
 	}

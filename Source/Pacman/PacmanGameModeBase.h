@@ -31,8 +31,6 @@ public:
 	UPROPERTY(EditAnywhere) UMaterialInterface* GhostFrightenedMaterial;
 
 private:
-	UPROPERTY() UNiagaraSystem* SuperFoodFX;
-	UPROPERTY() UNiagaraSystem* PowerUpFX;
 	UPROPERTY() APacmanPawn* Pacman;
 	TArray<AGhostPawn*> Ghosts;
 	UPROPERTY() AActor* CurrentPowerUp;
@@ -62,7 +60,6 @@ private:
 		float Opacity;
 		float Sign;
 		TFunction<void()> CalledWhenOpacity0;
-		//TFunction<void()> CalledWhenOpacity1;
 	};
 	FTeleport Teleports[5];
 

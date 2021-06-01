@@ -5,8 +5,6 @@
 #include "PacmanGameModeBase.h"
 #include "PacmanPawn.h"
 
-PRAGMA_DISABLE_OPTIMIZATION
-
 AGhostPawn::AGhostPawn()
 {
 	PrimaryActorTick.bCanEverTick = false;
