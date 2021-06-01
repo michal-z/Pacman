@@ -582,7 +582,7 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 		else if (PacmanFood->IsA(SuperFoodClass))
 		{
 			BeginFrightenedMode();
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, SuperFoodFX, PacmanFood->GetActorLocation());
+			//UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, SuperFoodFX, PacmanFood->GetActorLocation());
 		}
 
 		PacmanFood->Destroy();
@@ -597,11 +597,11 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 
 		if (FrightenedModeTimer > 0.0f && GhostPawn->bIsFrightened)
 		{
-			UNiagaraComponent* FX = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, SuperFoodFX, GhostPawn->GetActorLocation());
+			//UNiagaraComponent* FX = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, SuperFoodFX, GhostPawn->GetActorLocation());
 			{
 				FLinearColor Color;
 				GhostPawn->Material->GetVectorParameterDefaultValue(FHashedMaterialParameterInfo(TEXT("BaseColor")), Color);
-				FX->SetVariableLinearColor(TEXT("Color"), Color);
+				//FX->SetVariableLinearColor(TEXT("Color"), Color);
 			}
 
 			GhostPawn->FrozenModeTimer = 5.0f;

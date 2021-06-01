@@ -3,7 +3,7 @@
 #include "PacmanGameModeBase.generated.h"
 
 constexpr float GMapTileSize = 100.0f;
-constexpr float GGhostDefaultOpacity = 0.9f;
+constexpr float GGhostDefaultOpacity = 1.0f;
 
 class UGenericInfoWidget;
 class UMainMenuWidget;
