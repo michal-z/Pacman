@@ -84,6 +84,7 @@ void APacmanGameModeBase::BeginPlay()
 				const auto& Entry = LoadedHiscore->Entries[SlotIdx];
 				const auto Text = FText::Format(FText::FromString(TEXT("{0}. {1}: {2}")), SlotIdx + 1, Entry.Name, FText::AsNumber(Entry.Score));
 				Widget->SetText(Text);
+				// TODO: Set proper font.
 				MainMenuWidget->HiscoreBox->AddChildToVerticalBox(Widget);
 			}
 			else
