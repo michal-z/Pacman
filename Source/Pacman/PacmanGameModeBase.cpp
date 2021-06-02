@@ -89,7 +89,8 @@ void APacmanGameModeBase::BeginPlay()
 			if (LoadedHiscore && LoadedHiscore->Entries.IsValidIndex(SlotIdx))
 			{
 				const auto& Entry = LoadedHiscore->Entries[SlotIdx];
-				const auto Text = FText::Format(FText::FromString(TEXT("{0}. {1}: {2}")), SlotIdx + 1, Entry.Name, FText::AsNumber(Entry.Score));
+				const auto Text = FText::Format(FText::FromString(TEXT("{0}. {1}: {2}")), SlotIdx + 1, Entry.Name,
+					FText::AsNumber(Entry.Score));
 				Widget->SetText(Text);
 				MainMenuWidget->HiscoreBox->AddChildToVerticalBox(Widget);
 			}
@@ -141,7 +142,8 @@ void APacmanGameModeBase::BeginPlay()
 		HUDWidget->AddToViewport();
 		HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), GPacmanScore));
 		HUDWidget->LivesText->SetText(FText::Format(LOCTEXT("Lives", "Lives: {0}"), GPacmanNumLives));
-		HUDWidget->RandomTeleportsText->SetText(FText::Format(LOCTEXT("RandomTeleports", "Teleports: {0}"), GPacmanNumRandomTeleports));
+		HUDWidget->RandomTeleportsText->SetText(FText::Format(LOCTEXT("RandomTeleports", "Teleports: {0}"),
+			GPacmanNumRandomTeleports));
 		HUDWidget->LevelText->SetText(FText::Format(LOCTEXT("Level", "Level: {0}"), GGameLevel));
 
 		UPacmanHiscore* LoadedHiscore = Cast<UPacmanHiscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Hiscore"), 0));
@@ -313,7 +315,8 @@ void APacmanGameModeBase::MoveGhosts(float DeltaTime)
 				else if (Ghost->Color == EGhostColor::Blue)
 				{
 					const FVector RedGhostLocation = Ghosts[(int32)EGhostColor::Red]->GetActorLocation().GridSnap(GMapTileSize / 2);
-					TargetLocation = RedGhostLocation + 2.0f * ((PacmanLocationSnapped + 2.0f * GMapTileSize * Pacman->CurrentDirection) - RedGhostLocation);
+					TargetLocation = RedGhostLocation + 2.0f * ((PacmanLocationSnapped + 2.0f * GMapTileSize *
+						Pacman->CurrentDirection) - RedGhostLocation);
 				}
 				else if (Ghost->Color == EGhostColor::Orange)
 				{
@@ -678,7 +681,8 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 		else if (DiceRoll <= 15)
 		{
 			GPacmanNumRandomTeleports += 1;
-			HUDWidget->RandomTeleportsText->SetText(FText::Format(LOCTEXT("RandomTeleports", "Teleports: {0}"), GPacmanNumRandomTeleports));
+			HUDWidget->RandomTeleportsText->SetText(FText::Format(LOCTEXT("RandomTeleports", "Teleports: {0}"),
+				GPacmanNumRandomTeleports));
 		}
 		else
 		{
@@ -748,7 +752,8 @@ void APacmanGameModeBase::ShowGetReadyInfoWidget()
 
 void APacmanGameModeBase::DoRandomTeleport()
 {
-	if (GPacmanNumRandomTeleports == 0 || GGameLevel == 0 || GenericInfoWidget->IsInViewport() || Teleports[(int32)EGhostColor::Orange + 1].Material)
+	if (GPacmanNumRandomTeleports == 0 || GGameLevel == 0 || GenericInfoWidget->IsInViewport() ||
+		Teleports[(int32)EGhostColor::Orange + 1].Material)
 	{
 		return;
 	}
@@ -782,8 +787,10 @@ FVector APacmanGameModeBase::SelectRandomLocationOnMap(UWorld* World, const FVec
 	FVector RandomLocation = {};
 	for (;;)
 	{
-		RandomLocation.X = FMath::RandRange(0, GMapTileNumX - 1) * GMapTileSize - ((GMapTileSize * GMapTileNumX) / 2) - GMapTileSize / 2;
-		RandomLocation.Y = FMath::RandRange(0, GMapTileNumY - 1) * GMapTileSize - ((GMapTileSize * GMapTileNumY) / 2) - GMapTileSize / 2;
+		RandomLocation.X = FMath::RandRange(0, GMapTileNumX - 1) * GMapTileSize -
+			((GMapTileSize * GMapTileNumX) / 2) - GMapTileSize / 2;
+		RandomLocation.Y = FMath::RandRange(0, GMapTileNumY - 1) * GMapTileSize -
+			((GMapTileSize * GMapTileNumY) / 2) - GMapTileSize / 2;
 		RandomLocation.Z = GMapTileSize / 2;
 
 		bool bIsBlocked = World->SweepTestByChannel(
@@ -799,11 +806,13 @@ FVector APacmanGameModeBase::SelectRandomLocationOnMap(UWorld* World, const FVec
 				break;
 			}
 		}
-		if ((Ghosts[(int32)EGhostColor::Red]->HouseLocation - (RandomLocation + FVector(-GMapTileSize, 0.0f, 0.0f))).IsNearlyZero(1.5f))
+		if ((Ghosts[(int32)EGhostColor::Red]->HouseLocation -
+			(RandomLocation + FVector(-GMapTileSize, 0.0f, 0.0f))).IsNearlyZero(1.5f))
 		{
 			bIsBlocked = true;
 		}
-		if ((Ghosts[(int32)EGhostColor::Red]->HouseLocation - (RandomLocation + FVector(GMapTileSize, 0.0f, 0.0f))).IsNearlyZero(1.5f))
+		if ((Ghosts[(int32)EGhostColor::Red]->HouseLocation -
+			(RandomLocation + FVector(GMapTileSize, 0.0f, 0.0f))).IsNearlyZero(1.5f))
 		{
 			bIsBlocked = true;
 		}
