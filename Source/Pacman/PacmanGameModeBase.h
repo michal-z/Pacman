@@ -43,7 +43,6 @@ private:
 	float GhostModeTimer;
 	uint32 GhostModeIndex;
 	uint32 NumFoodLeft;
-
 	FTimerHandle TimerHandle;
 	TSubclassOf<UUserWidget> MainMenuWidgetClass;
 	TSubclassOf<UUserWidget> PauseMenuWidgetClass;
