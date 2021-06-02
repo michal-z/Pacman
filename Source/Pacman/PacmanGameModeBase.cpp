@@ -84,12 +84,13 @@ void APacmanGameModeBase::BeginPlay()
 		for (uint32 SlotIdx = 0; SlotIdx < GNumHiscoreEntries; ++SlotIdx)
 		{
 			auto Widget = NewObject<UTextBlock>(this);
+			FSlateFontInfo FontInfo = Font->GetLegacySlateFontInfo();
+			Widget->SetFont(FontInfo);
 			if (LoadedHiscore && LoadedHiscore->Entries.IsValidIndex(SlotIdx))
 			{
 				const auto& Entry = LoadedHiscore->Entries[SlotIdx];
 				const auto Text = FText::Format(FText::FromString(TEXT("{0}. {1}: {2}")), SlotIdx + 1, Entry.Name, FText::AsNumber(Entry.Score));
 				Widget->SetText(Text);
-				Widget->SetFont(Font->GetLegacySlateFontInfo());
 				MainMenuWidget->HiscoreBox->AddChildToVerticalBox(Widget);
 			}
 			else
@@ -681,7 +682,7 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 		}
 		else
 		{
-			GPacmanScore += 200;
+			GPacmanScore += 500;
 			HUDWidget->ScoreText->SetText(FText::Format(LOCTEXT("Score", "Score: {0}"), GPacmanScore));
 		}
 		PowerUpTrigger->Destroy();
