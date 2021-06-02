@@ -54,6 +54,7 @@ private:
 	UPROPERTY() UUserWidget* PauseMenuWidget;
 	UPROPERTY() UGenericInfoWidget* GenericInfoWidget;
 	UPROPERTY() UPacmanHUDWidget* HUDWidget;
+	UPROPERTY() UFont* Font;
 	struct FTeleport
 	{
 		UMaterialInstanceDynamic* Material;

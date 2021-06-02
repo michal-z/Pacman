@@ -9,6 +9,7 @@
 #include "Components/VerticalBox.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Blueprint/UserWidget.h"
+#include "Engine/Font.h"
 
 #define LOCTEXT_NAMESPACE "PacmanGameModeBase"
 
@@ -56,6 +57,10 @@ APacmanGameModeBase::APacmanGameModeBase()
 		static ConstructorHelpers::FClassFinder<APowerUpTrigger> Finder(TEXT("/Game/Blueprints/BP_PowerUpTrigger"));
 		PowerUpTriggerClass = Finder.Class;
 	}
+	{
+		static ConstructorHelpers::FObjectFinder<UFont> Finder(TEXT("/Game/UI/F_Main"));
+		Font = Finder.Object;
+	}
 }
 
 void APacmanGameModeBase::BeginPlay()
@@ -84,7 +89,7 @@ void APacmanGameModeBase::BeginPlay()
 				const auto& Entry = LoadedHiscore->Entries[SlotIdx];
 				const auto Text = FText::Format(FText::FromString(TEXT("{0}. {1}: {2}")), SlotIdx + 1, Entry.Name, FText::AsNumber(Entry.Score));
 				Widget->SetText(Text);
-				// TODO: Set proper font.
+				Widget->SetFont(Font->GetLegacySlateFontInfo());
 				MainMenuWidget->HiscoreBox->AddChildToVerticalBox(Widget);
 			}
 			else
@@ -139,13 +144,9 @@ void APacmanGameModeBase::BeginPlay()
 		HUDWidget->LevelText->SetText(FText::Format(LOCTEXT("Level", "Level: {0}"), GGameLevel));
 
 		UPacmanHiscore* LoadedHiscore = Cast<UPacmanHiscore>(UGameplayStatics::LoadGameFromSlot(TEXT("Hiscore"), 0));
-		if (LoadedHiscore && LoadedHiscore->Entries.Num() == GNumHiscoreEntries)
+		if (LoadedHiscore && !LoadedHiscore->Entries.IsEmpty())
 		{
-			HUDWidget->HiscoreText->SetText(FText::Format(LOCTEXT("Hiscore", "Hiscore: {0}"), LoadedHiscore->Entries.Last().Score));
-		}
-		else
-		{
-			HUDWidget->HiscoreText->SetText(LOCTEXT("Hiscore", "Hiscore: ---"));
+			HUDWidget->HiscoreText->SetText(FText::Format(LOCTEXT("Hiscore", "Hiscore: {0}"), LoadedHiscore->Entries[0].Score));
 		}
 
 		TArray<AActor*> FoodActors;
@@ -609,6 +610,7 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 				|| (LoadedHiscore && LoadedHiscore->Entries.Num() < GNumHiscoreEntries))
 			{
 				GetWorldTimerManager().ClearTimer(TimerHandle);
+				// TODO(mziulek): Disable non-ASCII characters.
 				GenericInfoWidget->Text->SetText(LOCTEXT("EnterName", "Type your name and press <Enter>"));
 				GenericInfoWidget->AddToViewport();
 				GenericInfoWidget->PlayerName->SetVisibility(UWidget::ConvertRuntimeToSerializedVisibility(EVisibility::Visible));
@@ -698,7 +700,7 @@ void APacmanGameModeBase::HandleActorOverlap(AActor* PacmanOrGhost, AActor* Othe
 
 void APacmanGameModeBase::CompleteLevel()
 {
-	GenericInfoWidget->Text->SetText(FText::Format(LOCTEXT("CompleteLevel", "You have completed Level {0}. Congratulations!"), GGameLevel));
+	GenericInfoWidget->Text->SetText(FText::Format(LOCTEXT("CompleteLevel", "Level {0}. completed!"), GGameLevel));
 	GenericInfoWidget->AddToViewport();
 	GetWorldTimerManager().SetTimer(TimerHandle,
 		[this]()
